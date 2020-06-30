@@ -1,2 +1,2 @@
 # Jodis
-Java Object Dictionary Server, Port of Redisto Java
+Java Object Dictionary Server, Port of Redis to Java
