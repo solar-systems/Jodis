@@ -8,6 +8,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * @author abel.huang
  * @date 2020/6/30 17:44
  */
-public class JodisZSet<K> implements JodisObject {
-    private ConcurrentSkipListSet<K> holder;
+public class JodisZSet implements JodisObject {
+    private ConcurrentSkipListSet<String> holder;
 }

@@ -5,4 +5,5 @@ package cn.abelib.jodis.protocol;
  * @date 2020/6/30 18:48
  */
 public interface RespCommand {
+    String prefix();
 }
