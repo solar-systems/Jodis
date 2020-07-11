@@ -1,16 +1,12 @@
 package cn.abelib.jodis.example;
 
-import cn.abelib.jodis.Jodis;
-
-import java.util.stream.IntStream;
-
 /**
  * @author abel.huang
  * @date 2020/6/30 18:36
  */
 public class JodisExample {
     public static void main(String[] args) {
-//        Jodis jodis = new Jodis();
+//        JodisDb jodis = new JodisDb();
 //
 //        IntStream.rangeClosed(1, 1000).forEach(
 //                i -> jodis.put(String.valueOf(i) , String.valueOf(i << 1))

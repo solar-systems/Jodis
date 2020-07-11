@@ -1,6 +1,5 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.Jodis;
 import cn.abelib.jodis.utils.StringUtils;
 
 import java.util.List;
@@ -12,8 +11,8 @@ import java.util.Objects;
  */
 public class StringOperation extends KeyOperation{
 
-    public StringOperation(Jodis jodis) {
-        super(jodis);
+    public StringOperation(JodisDb jodisDb) {
+        super(jodisDb);
     }
 
     /**
@@ -23,9 +22,8 @@ public class StringOperation extends KeyOperation{
      * @return
      */
     public int put(String key, String value) {
-        JodisString jodisString = new JodisString(value);
-        jodisCollection.put(key, jodisString);
-        return jodisString.getLen();
+        jodisCollection.put(key, new JodisObject(value));
+        return value.length();
     }
 
     /**
@@ -34,8 +32,7 @@ public class StringOperation extends KeyOperation{
      * @return
      */
     public String get(String key) {
-        JodisString value = (JodisString) jodisCollection.get(key);
-        return value.getHolder();
+        return (String) jodisCollection.get(key).getValue();
     }
 
     /**
@@ -46,21 +43,20 @@ public class StringOperation extends KeyOperation{
      * @return
      */
     public String getRange(String key, int start, int end) {
-        if (start > end) {
+        if (start > end || !exists(key)) {
             return StringUtils.EMPTY;
         }
-        JodisString value = (JodisString) jodisCollection.get(key);
+        String value = get(key);
         if (Objects.isNull(value)) {
             return StringUtils.EMPTY;
         }
-        String holder = value.getHolder();
-        int len = value.getLen();
+        int len = value.length();
         if (start >= len || end < 0 ) {
             return StringUtils.EMPTY;
         }
         end = end >= len ? len - 1 : end;
         start = start < 0 ? 0 : start;
-        return holder.substring(start, end + 1);
+        return value.substring(start, end + 1);
     }
 
     /**
@@ -101,6 +97,11 @@ public class StringOperation extends KeyOperation{
         return get(key).length();
     }
 
+    /**
+     * todo
+     * @param keys
+     * @return
+     */
     public List<String> multiGet(String ... keys) {
         return null;
     }

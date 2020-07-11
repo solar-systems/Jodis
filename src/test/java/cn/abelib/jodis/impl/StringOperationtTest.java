@@ -1,6 +1,5 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.Jodis;
 import cn.abelib.jodis.utils.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,13 +10,13 @@ import org.junit.Test;
  * @Date: 2020-07-02 23:34
  */
 public class StringOperationtTest {
-    Jodis jodis;
+    JodisDb jodisDb;
     StringOperation stringOperation;
 
     @Before
     public void init() {
-        jodis = new Jodis();
-        stringOperation = new StringOperation(jodis);
+        jodisDb = new JodisDb();
+        stringOperation = new StringOperation(jodisDb);
     }
 
     @Test

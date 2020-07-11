@@ -1,6 +1,7 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.Jodis;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -9,8 +10,8 @@ import cn.abelib.jodis.Jodis;
  */
 public class KeyOperation extends AbstractOperation{
 
-    public KeyOperation(Jodis jodis) {
-        super(jodis);
+    public KeyOperation(JodisDb jodisDb) {
+        super(jodisDb);
     }
 
     public int size() {
@@ -29,5 +30,67 @@ public class KeyOperation extends AbstractOperation{
 
     public boolean exists(String key) {
         return jodisCollection.containsKey(key);
+    }
+
+    /**
+     * todo
+     * @param key
+     * @return
+     */
+    public long expire(String key, long timestamp, TimeUnit unit) {
+        return 0L;
+    }
+
+    /**
+     * todo
+     * @param pattern
+     * @return
+     */
+    public List<String> keys(String pattern) {
+        return null;
+    }
+
+    /**
+     * todo
+     * @param key
+     */
+    public void persist(String key) {
+
+    }
+
+    /**
+     * todo
+     * @param key
+     * @param unit
+     * @return
+     */
+    public long ttl(String key, TimeUnit unit) {
+        return 0L;
+    }
+
+    /**
+     * todo
+     * @param key
+     * @param newKey
+     */
+    public void rename(String key, String newKey) {
+
+    }
+    /**
+     * todo
+     * @param key
+     * @param newKey
+     */
+    public void renameIfNotExist(String key, String newKey) {
+
+    }
+
+    /**
+     * todo
+     * @param key
+     * @return
+     */
+    public String type(String key){
+        return null;
     }
 }

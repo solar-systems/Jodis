@@ -1,8 +1,5 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.Jodis;
-import cn.abelib.jodis.api.JodisObject;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,8 +13,8 @@ public class AbstractOperation {
      */
     protected ConcurrentHashMap<String, JodisObject> expireJodisCollection;
 
-    public AbstractOperation(Jodis jodis) {
-        this.jodisCollection = jodis.jodisCollection();
-        this.expireJodisCollection = jodis.expireJodisCollection();
+    public AbstractOperation(JodisDb jodisDb) {
+        this.jodisCollection = jodisDb.jodisCollection();
+        this.expireJodisCollection = jodisDb.expireJodisCollection();
     }
 }

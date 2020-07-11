@@ -1,9 +1,10 @@
 package cn.abelib.jodis.internals;
 
+
 /**
  * @Author: abel.huang
- * @Date: 2020-07-02 22:50
- * 压缩列表
+ * @Date: 2020-07-02 23:07
  */
-public class ZipList {
+public class ExpireJodisList{
+
 }
