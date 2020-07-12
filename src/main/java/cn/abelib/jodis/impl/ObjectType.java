@@ -4,7 +4,7 @@ package cn.abelib.jodis.impl;
  * @Author: abel.huang
  * @Date: 2020-07-06 23:50
  */
-public enum  ObjectType {
+public enum ObjectType {
     /**
      * JodisString
      */

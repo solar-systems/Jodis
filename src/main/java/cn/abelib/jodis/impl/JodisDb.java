@@ -31,6 +31,10 @@ public class JodisDb {
         return this.expireJodisCollection;
     }
 
+    public JodisObject put(String key, JodisObject value) {
+        return jodisCollection.put(key, value);
+    }
+
     /**
      * 执行命令
      * @param request

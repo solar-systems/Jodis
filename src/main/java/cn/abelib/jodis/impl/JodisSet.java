@@ -8,4 +8,18 @@ import java.util.Set;
  */
 public class JodisSet {
     private Set<String> holder;
+
+    public JodisSet(){}
+
+    public JodisSet(Set<String> holder) {
+        this.holder = holder;
+    }
+
+    public Set<String> getHolder() {
+        return this.holder;
+    }
+
+    public int size() {
+        return this.holder.size();
+    }
 }

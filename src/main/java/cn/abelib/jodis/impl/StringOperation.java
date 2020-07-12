@@ -15,6 +15,14 @@ public class StringOperation extends KeyOperation{
         super(jodisDb);
     }
 
+    public JodisString getJodisString(String key) {
+        JodisObject jodisObject = jodisObject(key);
+        if (Objects.isNull(jodisObject)) {
+            return null;
+        }
+        return (JodisString)jodisObject.getValue();
+    }
+
     /**
      * Redis command: PUT
      * @param key
@@ -22,7 +30,7 @@ public class StringOperation extends KeyOperation{
      * @return
      */
     public int put(String key, String value) {
-        jodisCollection.put(key, new JodisObject(value));
+        jodisCollection.put(key, JodisObject.putJodisString(value));
         return value.length();
     }
 
@@ -32,7 +40,10 @@ public class StringOperation extends KeyOperation{
      * @return
      */
     public String get(String key) {
-        return (String) jodisCollection.get(key).getValue();
+        if (!exists(key)) {
+            return null;
+        }
+        return getJodisString(key).getHolder();
     }
 
     /**

@@ -1,7 +1,5 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.utils.StringUtils;
-import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

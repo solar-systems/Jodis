@@ -14,6 +14,21 @@ public class KeyOperation extends AbstractOperation{
         super(jodisDb);
     }
 
+    public JodisObject jodisObject(String key) {
+        return jodisCollection.get(key);
+    }
+
+    /**
+     * 校验数据类型是否合法
+     * @param key
+     * @param type
+     * @return
+     */
+    public boolean matchType(String key, String type) {
+        JodisObject jodisObject = jodisObject(key);
+        return type.equals(jodisObject.type());
+    }
+
     public int size() {
         return jodisCollection.size();
     }
