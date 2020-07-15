@@ -22,7 +22,7 @@ public class StringOperationtTest {
     @Test
     public void getRangeTest() {
         Assert.assertEquals(stringOperation.getRange("hello", 0, 3), StringUtils.EMPTY);
-        Assert.assertEquals(stringOperation.put("hello", "world"), 5);
+        Assert.assertEquals(stringOperation.set("hello", "world"), 5);
         Assert.assertEquals(stringOperation.getRange("hello", 2, 1), StringUtils.EMPTY);
         Assert.assertEquals(stringOperation.getRange("hello", 1, 1), "o");
         Assert.assertEquals(stringOperation.getRange("hello", -1, 6), "world");

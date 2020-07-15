@@ -21,10 +21,14 @@ public enum EncodingType {
     OBJ_ENCODING_HT("hash"),
 
     /**
+     * 集合
+     */
+    OBJ_ENCODING_SET("set"),
+
+    /**
      * 链表
      */
     OBJ_ENCODING_LIST("list"),
-
 
     /**
      * 跳表
@@ -33,6 +37,10 @@ public enum EncodingType {
 
     EncodingType(String type) {
         this.type = type;
+    }
+
+    public String getType() {
+        return type;
     }
 
     private String type;

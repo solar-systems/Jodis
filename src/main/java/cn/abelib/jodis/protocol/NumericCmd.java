@@ -2,7 +2,7 @@ package cn.abelib.jodis.protocol;
 
 /**
  * @author abel.huang
- * @date 2020/6/30 18:54
+ * @date 2020/6/30 18:52
  */
-public class ArrayCommand {
+public class NumericCmd {
 }

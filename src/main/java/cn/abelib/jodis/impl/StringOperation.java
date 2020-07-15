@@ -24,12 +24,12 @@ public class StringOperation extends KeyOperation{
     }
 
     /**
-     * Redis command: PUT
+     * Redis command: SET
      * @param key
      * @param value
      * @return
      */
-    public int put(String key, String value) {
+    public int set(String key, String value) {
         jodisCollection.put(key, JodisObject.putJodisString(value));
         return value.length();
     }
@@ -78,7 +78,7 @@ public class StringOperation extends KeyOperation{
      */
     public String getAndSet(String key, String value) {
         String old = get(key);
-        put(key, value);
+        set(key, value);
         return old;
     }
 
@@ -92,7 +92,7 @@ public class StringOperation extends KeyOperation{
         if (exists(key)) {
             return 1;
         }
-        put(key, value);
+        set(key, value);
         return 0;
     }
 

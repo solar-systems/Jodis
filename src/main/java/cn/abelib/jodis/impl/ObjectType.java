@@ -25,7 +25,6 @@ public enum ObjectType {
      */
     JODIS_SET("set"),
 
-
     /**
      * JodisZSet
      */
@@ -33,6 +32,10 @@ public enum ObjectType {
 
     ObjectType(String type) {
         this.type = type;
+    }
+
+    public String getType() {
+        return type;
     }
 
     private String type;

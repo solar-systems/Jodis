@@ -9,7 +9,7 @@ public class JodisExample {
 //        JodisDb jodis = new JodisDb();
 //
 //        IntStream.rangeClosed(1, 1000).forEach(
-//                i -> jodis.put(String.valueOf(i) , String.valueOf(i << 1))
+//                i -> jodis.set(String.valueOf(i) , String.valueOf(i << 1))
 //        );
 //
 //        IntStream.rangeClosed(1, 1000).forEach(

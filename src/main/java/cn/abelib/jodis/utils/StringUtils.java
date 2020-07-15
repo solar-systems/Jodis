@@ -8,4 +8,6 @@ public class StringUtils {
     private StringUtils(){}
 
     public static String EMPTY = "";
+
+    public static String CLRF = "\r\n";
 }

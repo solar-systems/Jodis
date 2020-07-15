@@ -19,7 +19,7 @@ public class JodisObject implements ExpireObject {
 
     private String lru;
 
-    private int refCount;
+    private int rc;
 
     private long created;
 
@@ -29,39 +29,51 @@ public class JodisObject implements ExpireObject {
 
     public JodisObject() {}
 
-    public JodisObject(Object value) {
-        this(value, -1L);
+    public JodisObject(Object value, String type, String encoding) {
+        this(value, type, encoding, -1L);
     }
 
-    public JodisObject(Object value, long ttl) {
+    public JodisObject(Object value, String type, String encoding, long ttl) {
         this.value = value;
+        this.type = type;
+        this.encoding = encoding;
         this.created = Instant.now().getEpochSecond();
         this.ttl = ttl;
     }
 
     public static JodisObject putJodisString(String value) {
         JodisString jodisString = new JodisString(value);
-        return new JodisObject(jodisString);
+        return new JodisObject(jodisString,
+                ObjectType.JODIS_STRING.getType(),
+                EncodingType.OBJ_ENCODING_RAW.getType());
     }
 
     public static JodisObject putJodisList(List<String> value) {
         JodisList jodisList = new JodisList(value);
-        return new JodisObject(jodisList);
+        return new JodisObject(jodisList,
+                ObjectType.JODIS_LIST.getType(),
+                EncodingType.OBJ_ENCODING_LIST.getType());
     }
 
     public static JodisObject putJodisSet(Set<String> value) {
         JodisSet jodisSet = new JodisSet(value);
-        return new JodisObject(jodisSet);
+        return new JodisObject(jodisSet,
+                ObjectType.JODIS_SET.getType(),
+                EncodingType.OBJ_ENCODING_SET.getType());
     }
 
     public static JodisObject putJodisMap(Map<String, String> value) {
         JodisMap jodisMap = new JodisMap(value);
-        return new JodisObject(jodisMap);
+        return new JodisObject(jodisMap,
+                ObjectType.JODIS_HASH.getType(),
+                EncodingType.OBJ_ENCODING_HT.getType());
     }
 
     public static JodisObject putJodisZSet(Map<String, Double> value, SkipList skipList) {
         JodisZSet jodisZSet = new JodisZSet(value, skipList);
-        return new JodisObject(jodisZSet);
+        return new JodisObject(jodisZSet,
+                ObjectType.JODIS_ZSET.getType(),
+                EncodingType.OBJ_ENCODING_SKIPLIST.getType());
     }
 
     public Object getValue() {

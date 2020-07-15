@@ -6,8 +6,8 @@ import java.util.*;
  * @Author: abel.huang
  * @Date: 2020-07-12 18:18
  */
-public class MapOperation extends KeyOperation {
-    public MapOperation(JodisDb jodisDb) {
+public class HashOperation extends KeyOperation {
+    public HashOperation(JodisDb jodisDb) {
         super(jodisDb);
     }
 

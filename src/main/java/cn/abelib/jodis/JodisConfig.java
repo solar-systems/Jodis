@@ -7,4 +7,9 @@ package cn.abelib.jodis;
  */
 public class JodisConfig {
 
+    public JodisConfig() {}
+
+    public static JodisConfig defaultConfig() {
+        return new JodisConfig();
+    }
 }
