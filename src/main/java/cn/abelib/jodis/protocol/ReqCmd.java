@@ -5,6 +5,8 @@ import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author abel.huang
@@ -25,9 +27,9 @@ public class ReqCmd {
         parseRequest();
     }
 
-    public ReqCmd(String cmd, List<String> params) {
+    public ReqCmd(String cmd, List<String> args) {
         // todo
-        this.request = toRequestString(cmd, params);
+        this.request = toRequestString(cmd, args);
     }
 
     private void parseRequest() {
@@ -51,6 +53,46 @@ public class ReqCmd {
 
     }
 
+    public boolean needLog() {
+        return this.needLog;
+    }
+
+    public static ReqCmd stringSetCmd(String key, String value) {
+        return new ReqCmd(CmdConstant.STRING_SET, Lists.newArrayList(key, value));
+    }
+
+    public static ReqCmd hashMultiSetCmd(String key, Map<String, String> value) {
+        List<String> args = Lists.newArrayList();
+        args.add(key);
+        value.forEach((k, v) -> {
+            args.add(k);
+            args.add(v);
+        });
+        return new ReqCmd(CmdConstant.HASH_HMSET, args);
+    }
+
+    public static ReqCmd setAddCmd(String key, Set<String> value) {
+        List<String> args = Lists.newArrayList();
+        args.add(key);
+        args.addAll(value);
+        return new ReqCmd(CmdConstant.SET_SADD, args);
+    }
+
+    public static ReqCmd listPushCmd(String key, List<String> value) {
+        value.add(key);
+        return new ReqCmd(CmdConstant.LIST_LPOP, value);
+    }
+
+    public static ReqCmd zsetAddCmd(String key, Map<String, Double> value) {
+        List<String> args = Lists.newArrayList();
+        args.add(key);
+        value.forEach((k, v) -> {
+            args.add(k);
+            args.add(String.valueOf(v));
+        });
+        return new ReqCmd(CmdConstant.ZSET_ZADD, args);
+    }
+
     public String getCmd() {
         return this.cmd;
     }
@@ -59,30 +101,17 @@ public class ReqCmd {
         return this.params;
     }
 
-    public String toRequestString(String cmd, List<String> param) {
+    public String toRequestString(String cmd, List<String> args) {
         return null;
     }
 
+    // todo
     @Override
     public String toString() {
         return super.toString();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    public String getRequest() {
+        return this.request;
+    }
 }

@@ -4,6 +4,8 @@ import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.protocol.ReqCmd;
 import cn.abelib.jodis.protocol.RespCmd;
 
+import java.io.IOException;
+
 /**
  * @Author: abel.huang
  * @Date: 2020-07-06 23:51
@@ -14,7 +16,7 @@ public class Jodis {
 
     public Jodis() {}
 
-    public Jodis(JodisConfig config) {
+    public Jodis(JodisConfig config) throws IOException {
         jodisDb = new JodisDb();
     }
 
@@ -22,15 +24,15 @@ public class Jodis {
         return new Jodis();
     }
 
-    public static Jodis create(JodisConfig config) {
+    public static Jodis create(JodisConfig config) throws IOException {
         return new Jodis(config);
     }
 
-    public String process(String request) {
+    public String process(String request) throws IOException {
         return jodisDb.execute(request).toRespString();
     }
 
-    public RespCmd process(ReqCmd request) {
+    public RespCmd process(ReqCmd request) throws IOException {
         return jodisDb.execute(request);
     }
 }

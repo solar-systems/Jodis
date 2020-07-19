@@ -5,6 +5,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * @Author: abel.huang
  * @Date: 2020-07-02 23:34
@@ -14,7 +16,7 @@ public class StringOperationtTest {
     StringOperation stringOperation;
 
     @Before
-    public void init() {
+    public void init() throws IOException {
         jodisDb = new JodisDb();
         stringOperation = new StringOperation(jodisDb);
     }

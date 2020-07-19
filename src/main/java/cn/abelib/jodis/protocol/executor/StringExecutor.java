@@ -22,22 +22,34 @@ public class StringExecutor implements Executor {
         this.stringOperation = new StringOperation(jodisDb);
     }
 
-    // todo
+    /**
+     *  todo 考虑策略模式优化
+     * 处理String相关的命令
+     * @param cmd
+     * @param params
+     * @return
+     */
     @Override
     public RespCmd execute(String cmd, List<String> params) {
         switch (cmd) {
             case CmdConstant.STRING_SET:
                 if (params.size() == 2) {
-                   int result =  stringOperation.set(params.get(0), params.get(1));
-                   return new SimpleCmd("OK");
+                   stringOperation.set(params.get(0), params.get(1));
+                   return SimpleCmd.ok();
+                } else {
+                    return ErrorCmd.errorSyntax();
                 }
-                break;
              case CmdConstant.STRING_GET:
-
+                 if (params.size() == 1) {
+                     String result = stringOperation.get(params.get(0));
+                     return SimpleCmd.result(result);
+                 } else {
+                     return ErrorCmd.errorSyntax();
+                 }
 
              default:
 
         }
-        return new ErrorCmd();
+        return ErrorCmd.error("");
     }
 }

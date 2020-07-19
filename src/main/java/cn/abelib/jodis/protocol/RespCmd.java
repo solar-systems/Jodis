@@ -8,4 +8,6 @@ public interface RespCmd {
     String prefix();
 
     String toRespString();
+
+    boolean isError();
 }

@@ -12,7 +12,7 @@ public interface CmdConstant {
     String SIMPLE_STRING_PREFIX = "+";
     String MULTI_STRING_PREFIX = "$";
     String INTEGER_NUMBER_PREFix = ":";
-    String ERROR_PREFIX = "-";
+    String ERROR_PREFIX = "-ERR ";
     String LIST_PREFIX = "*";
 
 

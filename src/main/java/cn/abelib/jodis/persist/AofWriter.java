@@ -1,27 +1,56 @@
 package cn.abelib.jodis.persist;
 
-import cn.abelib.jodis.protocol.ReqCmd;
 
+import cn.abelib.jodis.utils.IoUtils;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @Author: abel.huang
  * @Date: 2020-07-14 22:51
  */
 public class AofWriter {
-    /**
-     * 存放日志的跟路径
-     */
-    private Path dir;
+    private Path aofFile;
+    private Path rewrite;
 
-    private String fName;
+    public AofWriter(String dir, String fName) throws IOException {
+        this.rewrite = Paths.get(dir, fName + ".rewrite");
+        this.aofFile = IoUtils.createFileIfNotExists(dir, fName);
+    }
 
     /**
      * 强制同步返回
      * @param reqCmd
      * @return
      */
-    public boolean write(ReqCmd reqCmd) {
-        return false;
+    public boolean write(String reqCmd) throws IOException {
+        Files.write(aofFile, reqCmd.getBytes(StandardCharsets.UTF_8));
+        return true;
+    }
+
+    /**
+     * 开启rewrite
+     * @throws IOException
+     */
+    public void startRewrite() throws IOException {
+        if (Files.exists(this.rewrite)) {
+            Files.delete(rewrite);
+        }
+        Files.createFile(rewrite);
+    }
+
+    /**
+     * AOF重写入磁盘文件
+     * @param reqCmd
+     * @return
+     * @throws IOException
+     */
+    public boolean rewrite(String reqCmd) throws IOException {
+        Files.write(rewrite, reqCmd.getBytes(StandardCharsets.UTF_8));
+        return true;
     }
 }

@@ -4,6 +4,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+
 /**
  * @author abel.huang
  * @date 2020/6/30 17:43
@@ -13,7 +15,7 @@ public class ListOperationTest {
     ListOperation listOperation;
 
     @Before
-    public void init() {
+    public void init() throws IOException {
         jodisDb = new JodisDb();
         listOperation = new ListOperation(jodisDb);
     }
