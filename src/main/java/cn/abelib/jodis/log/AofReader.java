@@ -1,4 +1,4 @@
-package cn.abelib.jodis.persist;
+package cn.abelib.jodis.log;
 
 import cn.abelib.jodis.utils.IoUtils;
 

@@ -1,6 +1,6 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.persist.AofWriter;
+import cn.abelib.jodis.log.AofWriter;
 import cn.abelib.jodis.protocol.CmdConstant;
 import cn.abelib.jodis.protocol.ErrorCmd;
 import cn.abelib.jodis.protocol.ReqCmd;
@@ -71,7 +71,7 @@ public class JodisDb {
      */
     public RespCmd execute(ReqCmd request) throws IOException {
         String cmd = request.getCmd();
-        List<String> params = request.getParams();
+        List<String> params = request.getArgs();
         RespCmd result;
         if (CmdConstant.KEY_CMDS.contains(cmd)) {
             // todo

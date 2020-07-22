@@ -20,6 +20,12 @@ public class JodisZSet {
         this.skipList = skipList;
     }
 
+    public JodisZSet(Map<String, Double> holder) {
+        this.holder = holder;
+        this.skipList = new SkipList();
+        holder.forEach((k, v) -> skipList.add(v, k));
+    }
+
     public SkipList getSkipList() {
         return this.skipList;
     }

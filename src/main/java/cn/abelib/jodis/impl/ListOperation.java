@@ -135,6 +135,4 @@ public class ListOperation extends KeyOperation{
     public int leftPush(String key, String value) {
         return leftPush(key, Collections.singletonList(value));
     }
-
-
 }

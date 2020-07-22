@@ -1,6 +1,5 @@
 package cn.abelib.jodis.protocol;
 
-import cn.abelib.jodis.impl.ObjectType;
 import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 
@@ -19,8 +18,7 @@ public class ReqCmd {
     private String request;
     private boolean needLog;
     private String cmd;
-    private List<String> params;
-    private ObjectType objectType;
+    private List<String> args;
 
     public ReqCmd(String request) {
         this.request = request;
@@ -28,8 +26,7 @@ public class ReqCmd {
     }
 
     public ReqCmd(String cmd, List<String> args) {
-        // todo
-        this.request = toRequestString(cmd, args);
+        this.request = genRequest(cmd, args);
     }
 
     private void parseRequest() {
@@ -48,8 +45,8 @@ public class ReqCmd {
             throw new CmdParserException("");
         }
         cmd = cmds[0].toUpperCase();
-        params = Lists.newArrayList(cmds);
-        params.remove(0);
+        args = Lists.newArrayList(cmds);
+        args.remove(0);
 
     }
 
@@ -97,18 +94,35 @@ public class ReqCmd {
         return this.cmd;
     }
 
-    public List<String> getParams() {
-        return this.params;
+    public List<String> getArgs() {
+        return this.args;
     }
 
-    public String toRequestString(String cmd, List<String> args) {
-        return null;
+    /**
+     * eg *3\r\n$3\r\nset\r\n$4\r\nname\r\n$3\r\nbob\r\n
+     * @param cmd
+     * @param args
+     * @return
+     */
+    public String genRequest(String cmd, List<String> args) {
+        args.add(0, cmd);
+        int len = args.size();
+        StringBuilder request = new StringBuilder(CmdConstant.LIST_PREFIX);
+        request.append(len).append(StringUtils.CLRF);
+        for (String arg : args) {
+            request.append(arg);
+            request.append(StringUtils.CLRF);
+        }
+        return request.toString();
     }
 
-    // todo
+    /**
+     * 返回多行字符数组格式的字符串
+     * @return
+     */
     @Override
     public String toString() {
-        return super.toString();
+        return genRequest(this.getCmd(), this.getArgs());
     }
 
     public String getRequest() {
