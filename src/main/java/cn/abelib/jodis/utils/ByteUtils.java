@@ -39,6 +39,28 @@ public class ByteUtils {
         return new String(a, StandardCharsets.UTF_8);
     }
 
+    public static byte[] getBytesUTF8(String str) {
+        return str.getBytes(StandardCharsets.UTF_8);
+    }
+
+    public static String string2Binary(String str){
+        char[] chars = str.toCharArray();
+        StringBuilder ans = new StringBuilder();
+        for(char c : chars){
+            ans.append(Integer.toBinaryString(c));
+        }
+        return ans.toString();
+    }
+
+//    public static String binaryToString(String binary){
+//        String[] tempStr = binary.split(" ");
+//        char[] chars = new char[tempStr.length];
+//        for(int i = 0; i < tempStr.length; i++) {
+//            chars[i] = BinstrToChar(tempStr[i]);
+//        }
+//        return String.valueOf(chars);
+//    }
+
     public static byte[] stringBytesWithLen(String str) {
         int len = str.length();
         byte[] lens = int2Bytes(len);

@@ -1,6 +1,6 @@
 package cn.abelib.jodis.internal;
 
-import cn.abelib.jodis.internals.SkipList;
+import cn.abelib.jodis.impl.SkipList;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

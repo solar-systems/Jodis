@@ -1,7 +1,7 @@
 package cn.abelib.jodis.log;
 
 import cn.abelib.jodis.impl.*;
-import cn.abelib.jodis.internals.SkipList;
+import cn.abelib.jodis.impl.SkipList;
 import cn.abelib.jodis.utils.KV;
 import com.google.common.collect.Sets;
 import java.util.*;
@@ -51,7 +51,7 @@ public class JdbReader {
         return new KV<>(key, jodisList);
     }
 
-    public KV<String, JodisMap> readMap(byte[] bytes) {
+    public KV<String, JodisHash> readMap(byte[] bytes) {
         KV<String, List<String>> ans = readCollection(bytes);
         if (ans.isNull()) {
             return new KV<>();
@@ -63,8 +63,8 @@ public class JdbReader {
         for (int i = 0; i < len; i++) {
             map.put(value.get(i * 2), value.get(i * 2 + 1));
         }
-        JodisMap jodisMap = new JodisMap(map);
-        return new KV<>(key, jodisMap);
+        JodisHash jodisHash = new JodisHash(map);
+        return new KV<>(key, jodisHash);
     }
 
     public KV<String, JodisSet> readSet(byte[] bytes) {
@@ -78,7 +78,7 @@ public class JdbReader {
         return new KV<>(key, jodisSet);
     }
 
-    public KV<String, JodisZSet> readZSet(byte[] bytes) {
+    public KV<String, JodisSortedSet> readZSet(byte[] bytes) {
         KV<String, List<String>> ans = readCollection(bytes);
         if (ans.isNull()) {
             return new KV<>();
@@ -94,8 +94,8 @@ public class JdbReader {
             map.put(item, score);
             skipList.add(score, item);
         }
-        JodisZSet jodisZSet = new JodisZSet(map, skipList);
-        return new KV<>(key, jodisZSet);
+        JodisSortedSet jodisSortedSet = new JodisSortedSet(map, skipList);
+        return new KV<>(key, jodisSortedSet);
     }
 
     private KV<String, List<String>> readCollection(byte[] bytes) {

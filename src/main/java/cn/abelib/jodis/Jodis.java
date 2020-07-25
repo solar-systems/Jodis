@@ -1,8 +1,8 @@
 package cn.abelib.jodis;
 
 import cn.abelib.jodis.impl.JodisDb;
-import cn.abelib.jodis.protocol.ReqCmd;
-import cn.abelib.jodis.protocol.RespCmd;
+import cn.abelib.jodis.protocol.Request;
+import cn.abelib.jodis.protocol.Response;
 
 import java.io.IOException;
 
@@ -32,7 +32,7 @@ public class Jodis {
         return jodisDb.execute(request).toRespString();
     }
 
-    public RespCmd process(ReqCmd request) throws IOException {
+    public Response process(Request request) throws IOException {
         return jodisDb.execute(request);
     }
 }

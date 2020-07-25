@@ -1,8 +1,5 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.api.ExpireObject;
-import cn.abelib.jodis.internals.SkipList;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -42,35 +39,35 @@ public class JodisObject implements ExpireObject {
     public static JodisObject putJodisString(String value) {
         JodisString jodisString = new JodisString(value);
         return new JodisObject(jodisString,
-                ObjectType.JODIS_STRING,
+                KeyType.JODIS_STRING,
                 EncodingType.OBJ_ENCODING_RAW.getType());
     }
 
     public static JodisObject putJodisList(List<String> value) {
         JodisList jodisList = new JodisList(value);
         return new JodisObject(jodisList,
-                ObjectType.JODIS_LIST,
+                KeyType.JODIS_LIST,
                 EncodingType.OBJ_ENCODING_LIST.getType());
     }
 
     public static JodisObject putJodisSet(Set<String> value) {
         JodisSet jodisSet = new JodisSet(value);
         return new JodisObject(jodisSet,
-                ObjectType.JODIS_SET,
+                KeyType.JODIS_SET,
                 EncodingType.OBJ_ENCODING_SET.getType());
     }
 
-    public static JodisObject putJodisMap(Map<String, String> value) {
-        JodisMap jodisMap = new JodisMap(value);
-        return new JodisObject(jodisMap,
-                ObjectType.JODIS_HASH,
+    public static JodisObject putJodisHash(Map<String, String> value) {
+        JodisHash jodisHash = new JodisHash(value);
+        return new JodisObject(jodisHash,
+                KeyType.JODIS_HASH,
                 EncodingType.OBJ_ENCODING_HT.getType());
     }
 
     public static JodisObject putJodisZSet(Map<String, Double> value, SkipList skipList) {
-        JodisZSet jodisZSet = new JodisZSet(value, skipList);
-        return new JodisObject(jodisZSet,
-                ObjectType.JODIS_ZSET,
+        JodisSortedSet jodisSortedSet = new JodisSortedSet(value, skipList);
+        return new JodisObject(jodisSortedSet,
+                KeyType.JODIS_ZSET,
                 EncodingType.OBJ_ENCODING_SKIPLIST.getType());
     }
 

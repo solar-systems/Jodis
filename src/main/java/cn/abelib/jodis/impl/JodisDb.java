@@ -1,11 +1,11 @@
 package cn.abelib.jodis.impl;
 
 import cn.abelib.jodis.log.AofWriter;
-import cn.abelib.jodis.protocol.CmdConstant;
-import cn.abelib.jodis.protocol.ErrorCmd;
-import cn.abelib.jodis.protocol.ReqCmd;
-import cn.abelib.jodis.protocol.RespCmd;
-import cn.abelib.jodis.protocol.executor.ExecutorFactory;
+import cn.abelib.jodis.protocol.ProtocolConstant;
+import cn.abelib.jodis.protocol.ErrorResponse;
+import cn.abelib.jodis.protocol.Request;
+import cn.abelib.jodis.protocol.Response;
+import cn.abelib.jodis.impl.executor.ExecutorFactory;
 import cn.abelib.jodis.utils.StringUtils;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class JodisDb {
     /**
      * 请求队列
      */
-    private List<ReqCmd> requestQueue;
+    private List<Request> requestQueue;
     /**
      * 是否正在进行Aof文件重写
      */
@@ -69,26 +69,26 @@ public class JodisDb {
      * @param request
      * @return
      */
-    public RespCmd execute(ReqCmd request) throws IOException {
+    public Response execute(Request request) throws IOException {
         String cmd = request.getCmd();
         List<String> params = request.getArgs();
-        RespCmd result;
-        if (CmdConstant.KEY_CMDS.contains(cmd)) {
+        Response result;
+        if (ProtocolConstant.KEY_CMDS.contains(cmd)) {
             // todo
             result = executorFactory.stringExecutor().execute(cmd, params);
-        } else if (CmdConstant.STRING_CMDS.contains(cmd)) {
+        } else if (ProtocolConstant.STRING_CMDS.contains(cmd)) {
             result = executorFactory.stringExecutor().execute(cmd, params);
-        } else if (CmdConstant.LIST_CMDS.contains(cmd)) {
+        } else if (ProtocolConstant.LIST_CMDS.contains(cmd)) {
             result = executorFactory.listExecutor().execute(cmd, params);
-        } else if (CmdConstant.HASH_CMDS.contains(cmd)) {
+        } else if (ProtocolConstant.HASH_CMDS.contains(cmd)) {
             result = executorFactory.hashExecutor().execute(cmd, params);
-        } else if (CmdConstant.SET_CMDS.contains(cmd)) {
+        } else if (ProtocolConstant.SET_CMDS.contains(cmd)) {
             result =  executorFactory.setExecutor().execute(cmd, params);
-        } else if (CmdConstant.ZSET_CMDS.contains(cmd)) {
+        } else if (ProtocolConstant.ZSET_CMDS.contains(cmd)) {
             result = executorFactory.zSetExecutor().execute(cmd, params);
         } else {
             // todo not support now
-            result = ErrorCmd.errorSyntax();
+            result = ErrorResponse.errorSyntax();
         }
 
         // 检测是否需要进行AOF
@@ -107,8 +107,8 @@ public class JodisDb {
     }
 
 
-    public RespCmd execute(String request) throws IOException {
-        ReqCmd reqCmd = new ReqCmd(request);
+    public Response execute(String request) throws IOException {
+        Request reqCmd = new Request(request);
         return execute(reqCmd);
     }
 
@@ -129,27 +129,27 @@ public class JodisDb {
             String type = value.type();
             String key = entry.getKey();
 
-            ReqCmd cmd;
+            Request cmd;
             switch (type) {
-                case ObjectType.JODIS_STRING:
+                case KeyType.JODIS_STRING:
                     String valueString = ((JodisString)value.getValue()).getHolder();
-                    cmd = ReqCmd.stringSetCmd(key, valueString);
+                    cmd = Request.stringSetCmd(key, valueString);
                     break;
-                case ObjectType.JODIS_HASH:
-                    Map<String, String> valueMap = ((JodisMap)value.getValue()).getHolder();
-                    cmd = ReqCmd.hashMultiSetCmd(key, valueMap);
+                case KeyType.JODIS_HASH:
+                    Map<String, String> valueMap = ((JodisHash)value.getValue()).getHolder();
+                    cmd = Request.hashMultiSetCmd(key, valueMap);
                     break;
-                case ObjectType.JODIS_SET:
+                case KeyType.JODIS_SET:
                     Set<String> valueSet = ((JodisSet)value.getValue()).getHolder();
-                    cmd = ReqCmd.setAddCmd(key, valueSet);
+                    cmd = Request.setAddCmd(key, valueSet);
                     break;
-                case ObjectType.JODIS_LIST:
+                case KeyType.JODIS_LIST:
                     List<String> valueList = ((JodisList)value.getValue()).getHolder();
-                    cmd = ReqCmd.listPushCmd(key, valueList);
+                    cmd = Request.listPushCmd(key, valueList);
                     break;
-                case ObjectType.JODIS_ZSET:
-                    Map<String, Double> valueZset = ((JodisZSet)value.getValue()).getHolder();
-                    cmd = ReqCmd.zsetAddCmd(key, valueZset);
+                case KeyType.JODIS_ZSET:
+                    Map<String, Double> valueZset = ((JodisSortedSet)value.getValue()).getHolder();
+                    cmd = Request.zsetAddCmd(key, valueZset);
                     break;
                 default:
                     cmd = null;
@@ -158,7 +158,7 @@ public class JodisDb {
                 this.aofWriter.rewrite(cmd.toString());
             }
         }
-        Iterator<ReqCmd> iterator = this.requestQueue.iterator();
+        Iterator<Request> iterator = this.requestQueue.iterator();
         while (iterator.hasNext()) {
             this.aofWriter.rewrite(iterator.next().toString());
         }

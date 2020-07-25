@@ -67,9 +67,9 @@ public class JdbWriterTest {
         map.put("hello", "world");
         map.put("world", "hello");
 
-        JodisMap value = new JodisMap(map);
+        JodisHash value = new JodisHash(map);
         byte[] buf = jdbWriter.writeHash(key, value);
-        KV<String, JodisMap> kv = jdbReader.readMap(buf);
+        KV<String, JodisHash> kv = jdbReader.readMap(buf);
         Assert.assertEquals(kv.getK(), key);
         Assert.assertEquals(kv.getV().getHolder().size(), value.getHolder().size());
     }
@@ -82,9 +82,9 @@ public class JdbWriterTest {
         map.put("hello", 0.1);
         map.put("world", 0.2);
 
-        JodisZSet value = new JodisZSet(map);
+        JodisSortedSet value = new JodisSortedSet(map);
         byte[] buf = jdbWriter.writeZSet(key, value);
-        KV<String, JodisZSet> kv = jdbReader.readZSet(buf);
+        KV<String, JodisSortedSet> kv = jdbReader.readZSet(buf);
         Assert.assertEquals(kv.getK(), key);
         Assert.assertEquals(kv.getV().getHolder().size(), value.getHolder().size());
     }

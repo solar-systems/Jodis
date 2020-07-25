@@ -20,4 +20,11 @@ public class StringUtils {
     public static boolean isNotEmpty(String str) {
         return Objects.nonNull(str) && !EMPTY.equals(str);
     }
+
+    public static boolean equals(String str1, String str2) {
+        if (Objects.isNull(str1) || Objects.isNull(str2)) {
+            return false;
+        }
+        return str1.equals(str2);
+    }
 }

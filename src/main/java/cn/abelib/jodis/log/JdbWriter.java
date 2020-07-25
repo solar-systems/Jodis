@@ -4,7 +4,6 @@ import cn.abelib.jodis.impl.*;
 import cn.abelib.jodis.utils.ByteUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @Author: abel.huang
@@ -73,7 +72,7 @@ public class JdbWriter {
     }
 
     /**
-     *  For JodisMap
+     *  For JodisHash
      * |-----|-----|-------|--------|-------|--------|-------|------|
      * |kLen | key |hashLen|filedLen| filed |valueLen| value | ...  |
      * |-----|-----|-------|--------|-------|--------|-------|------|
@@ -81,7 +80,7 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeHash(String key, JodisMap value) {
+    public byte[] writeHash(String key, JodisHash value) {
         Map<String, String> values = value.getHolder();
         List<String> kvs = new ArrayList<>(values.keySet());
         kvs.addAll(values.values());
@@ -103,7 +102,7 @@ public class JdbWriter {
     }
 
     /**
-     *  For JodisZSet
+     *  For JodisSortedSet
      * |-----|-----|-------|--------|-------|--------|-------|------|
      * |kLen | key |hashLen|filedLen| filed |scoreLen| score | ...  |
      * |-----|-----|-------|--------|-------|--------|-------|------|
@@ -112,7 +111,7 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeZSet(String key, JodisZSet value) {
+    public byte[] writeZSet(String key, JodisSortedSet value) {
         Map<String, Double> values = value.getHolder();
         List<String> kvs = new ArrayList<>(values.size() * 2);
         values.forEach((k, v) -> {
