@@ -25,7 +25,6 @@ public class JdbWriter {
     }
 
     /**
-     *  todo test
      *  For JodisString
      * |-----|-----|------|------|
      * |kLen | key | vLen | value|

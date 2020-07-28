@@ -71,6 +71,13 @@ public class JodisObject implements ExpireObject {
                 EncodingType.OBJ_ENCODING_SKIPLIST.getType());
     }
 
+    public static JodisObject putJodisZSet(JodisSortedSet zSet) {
+        JodisSortedSet jodisSortedSet = new JodisSortedSet(zSet);
+        return new JodisObject(jodisSortedSet,
+                KeyType.JODIS_ZSET,
+                EncodingType.OBJ_ENCODING_SKIPLIST.getType());
+    }
+
     public Object getValue() {
         return this.value;
     }

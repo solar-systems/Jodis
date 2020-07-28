@@ -1,6 +1,7 @@
 package cn.abelib.jodis.impl;
 
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,7 +12,13 @@ public class JodisSortedSet {
     private Map<String, Double> holder;
     private SkipList skipList;
 
-    public JodisSortedSet(){}
+    public JodisSortedSet(JodisSortedSet zSet){
+        this(zSet.getHolder(), zSet.getSkipList());
+    }
+
+    public JodisSortedSet(){
+        this(new HashMap<>(8), new SkipList());
+    }
 
     public JodisSortedSet(Map<String, Double> holder, SkipList skipList) {
         this.holder = holder;

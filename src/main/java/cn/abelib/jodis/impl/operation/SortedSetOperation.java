@@ -30,19 +30,19 @@ public class SortedSetOperation extends KeyOperation {
      * @param key
      * @return
      */
-    public int zadd(String key, double score, String member){
+    public int zAdd(String key, double score, String member){
         JodisSortedSet zSet;
         if (exists(key)) {
             zSet = getJodisZSet(key);
         } else {
             zSet = new JodisSortedSet();
+            jodisCollection.put(key, JodisObject.putJodisZSet(zSet));
         }
         Map<String, Double> map = zSet.getHolder();
         SkipList skipList = zSet.getSkipList();
 
         if (Objects.isNull(map.put(member, score))) {
             skipList.add(score, member);
-            jodisCollection.put(key, JodisObject.putJodisZSet(map, skipList));
             return 1;
         }
         return 0;
@@ -53,7 +53,7 @@ public class SortedSetOperation extends KeyOperation {
      * @param key
      * @return
      */
-    public int zcard(String key) {
+    public int zCard(String key) {
         if (!exists(key)) {
             return 0;
         }
@@ -67,7 +67,7 @@ public class SortedSetOperation extends KeyOperation {
      * @param member
      * @return
      */
-    public double zscore(String key, String member) {
+    public double zScore(String key, String member) {
         if (!exists(key)) {
             return 0.0;
         }

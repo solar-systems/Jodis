@@ -15,7 +15,7 @@ public class HashOperation extends KeyOperation {
         super(jodisDb);
     }
 
-    public JodisHash getJodisMap(String key) {
+    public JodisHash getJodisHash(String key) {
         JodisObject jodisObject = jodisObject(key);
         if (Objects.isNull(jodisObject)) {
             return null;
@@ -24,15 +24,28 @@ public class HashOperation extends KeyOperation {
     }
 
     /**
+     * Redis command: HGETALL
+     * @param key
+     * @return
+     */
+    public Map<String, String> getHash(String key) {
+        if (exists(key)) {
+            return getJodisHash(key).getHolder();
+        }
+        return null;
+    }
+
+    /**
      * Redis command: HGET
      * @param key
      * @return
      */
     public String hashGet(String key, String field){
-        if (!exists(key)) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
             return null;
         }
-        Map<String, String> map = getJodisMap(key).getHolder();
+
         return map.get(field);
     }
 
@@ -41,19 +54,13 @@ public class HashOperation extends KeyOperation {
      * @param key
      * @return
      */
-    public int hashSet(String key, String field, String value){
-        Map<String, String> map;
-        if (exists(key)) {
-            map = getJodisMap(key).getHolder();
-        } else {
+    public boolean hashSet(String key, String field, String value){
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
             map = new HashMap<>(8);
-        }
-
-        if (Objects.isNull(map.put(field, value))) {
             jodisCollection.put(key, JodisObject.putJodisHash(map));
-            return 1;
         }
-        return 0;
+        return Objects.isNull(map.put(field, value));
     }
 
     /**
@@ -63,10 +70,10 @@ public class HashOperation extends KeyOperation {
      * @return
      */
     public boolean hashExists(String key, String field) {
-        if (!exists(key)) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
             return false;
         }
-        Map<String, String> map = getJodisMap(key).getHolder();
         return map.containsKey(field);
     }
 
@@ -76,10 +83,7 @@ public class HashOperation extends KeyOperation {
      * @return
      */
     public Set<String> hashKeys(String key) {
-        if (!exists(key)) {
-            return null;
-        }
-        Map<String, String> map = getJodisMap(key).getHolder();
+        Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
             return null;
         }
@@ -92,10 +96,7 @@ public class HashOperation extends KeyOperation {
      * @return
      */
     public Collection<String> hashValues(String key) {
-        if (!exists(key)) {
-            return null;
-        }
-        Map<String, String> map = getJodisMap(key).getHolder();
+        Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
             return null;
         }
@@ -111,11 +112,7 @@ public class HashOperation extends KeyOperation {
         if (!exists(key)) {
             return 0;
         }
-       JodisHash map = getJodisMap(key);
-        if (Objects.isNull(map)) {
-            return 0;
-        }
-        return getJodisMap(key).size();
+        return getJodisHash(key).size();
     }
 
     /**
@@ -125,11 +122,75 @@ public class HashOperation extends KeyOperation {
      * @param value
      * @return
      */
-    public int hashSetIfNotExists(String key, String field, String value){
+    public boolean hashSetIfNotExists(String key, String field, String value){
         if (hashExists(key, field)) {
-            return 0;
+            return true;
         }
 
         return hashSet(key, field, value);
+    }
+
+    /**
+     * Redis command: HINCRBY
+     * @param key
+     * @param filed
+     * @param incrNumber
+     * @return
+     */
+    public int hashIncrementBy(String key, String filed, int incrNumber) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
+            map = new HashMap<>(8);
+            jodisCollection.put(key, JodisObject.putJodisHash(map));
+        }
+        String value = map.get(filed);
+        int res = incrNumber;
+        if (Objects.isNull(value)) {
+            map.put(filed, String.valueOf(incrNumber));
+        } else {
+            res += Integer.parseInt(value);
+            map.put(filed, String.valueOf(res));
+
+        }
+        return res;
+    }
+
+    /**
+     * Redis command: HDEL
+     * @param key
+     * @param filed
+     * @return
+     */
+    public int hashDelete(String key, String filed) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
+            return 0;
+        }
+        return Objects.isNull(map.remove(filed)) ? 0 : 1 ;
+    }
+
+    /**
+     * Redis command: HINCRBY
+     * @param key
+     * @param filed
+     * @param incrNumber
+     * @return
+     */
+    public float hashIncrementByFloat(String key, String filed, float incrNumber) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
+            map = new HashMap<>(8);
+            jodisCollection.put(key, JodisObject.putJodisHash(map));
+        }
+        String value = map.get(filed);
+        float res = incrNumber;
+        if (Objects.isNull(value)) {
+            map.put(filed, String.valueOf(incrNumber));
+        } else {
+            res += Float.parseFloat(value);
+            map.put(filed, String.valueOf(res));
+
+        }
+        return res;
     }
 }

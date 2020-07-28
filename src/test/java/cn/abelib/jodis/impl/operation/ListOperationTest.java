@@ -1,7 +1,6 @@
 package cn.abelib.jodis.impl.operation;
 
 import cn.abelib.jodis.impl.JodisDb;
-import cn.abelib.jodis.impl.operation.ListOperation;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,8 +28,19 @@ public class ListOperationTest {
 
     @Test
     public void leftPushTest() {
-        Assert.assertEquals(listOperation.leftPush("hello", "world"), 1);
-        Assert.assertEquals(listOperation.leftPush("hello", "Jodis"), 2);
-        Assert.assertEquals(listOperation.leftPush("hello", "Java"), 3);
+        Assert.assertEquals(listOperation.leftPush("jodis_list", "jodis_item1"), 1);
+        Assert.assertEquals(listOperation.leftPush("jodis_list", "jodis_item2"), 2);
+        Assert.assertEquals(listOperation.leftPush("jodis_list", "jodis_item3"), 3);
+    }
+
+    @Test
+    public void leftIndexTest() {
+        listOperation.leftPush("jodis_list", "jodis_item1");
+        listOperation.leftPush("jodis_list", "jodis_item2");
+        listOperation.leftPush("jodis_list", "jodis_item3");
+
+        Assert.assertEquals(listOperation.leftIndex("jodis_list", 0), "jodis_item3");
+        Assert.assertEquals(listOperation.leftIndex("jodis_list", 1), "jodis_item2");
+        Assert.assertEquals(listOperation.leftIndex("jodis_list", 2), "jodis_item1");
     }
 }
