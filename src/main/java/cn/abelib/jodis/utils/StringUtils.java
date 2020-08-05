@@ -27,4 +27,27 @@ public class StringUtils {
         }
         return str1.equals(str2);
     }
+
+    /**
+     * 首字母大写
+     * @param str
+     * @return
+     */
+    public static String capitalize(String str) {
+        int strLen;
+        if (str != null && (strLen = str.length()) != 0) {
+            char firstChar = str.charAt(0);
+            char newChar = Character.toTitleCase(firstChar);
+            if (firstChar == newChar) {
+                return str;
+            } else {
+                char[] newChars = new char[strLen];
+                newChars[0] = newChar;
+                str.getChars(1, strLen, newChars, 1);
+                return String.valueOf(newChars);
+            }
+        } else {
+            return str;
+        }
+    }
 }

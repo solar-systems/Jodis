@@ -1,11 +1,15 @@
 package cn.abelib.jodis.impl;
 
 import cn.abelib.jodis.log.AofWriter;
+import cn.abelib.jodis.log.JdbReader;
+import cn.abelib.jodis.log.JdbWriter;
 import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.ErrorResponse;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import cn.abelib.jodis.impl.executor.ExecutorFactory;
+import cn.abelib.jodis.server.JodisConfig;
+import cn.abelib.jodis.server.JodisException;
 import cn.abelib.jodis.utils.StringUtils;
 
 import java.io.IOException;
@@ -38,16 +42,36 @@ public class JodisDb {
      * 请求队列
      */
     private List<Request> requestQueue;
+
+    /**
+     * todo
+     */
+    private JdbReader jdbReader;
+
+    private JdbWriter jdbWriter;
+
     /**
      * 是否正在进行Aof文件重写
      */
     private AtomicBoolean rewriteAof;
 
+    public JodisDb(JodisConfig jodisConfig) throws IOException {
+        jodisCollection = new ConcurrentHashMap<>();
+        executorFactory = new ExecutorFactory(this);
+        aofWriter = new AofWriter(jodisConfig.getLogDir(), jodisConfig.getLogWal());
+
+        requestQueue = new ArrayList<>(10);
+        rewriteAof = new AtomicBoolean(false);
+    }
+
+    /**
+     * default for test
+     * todo
+     * @throws IOException
+     */
     public JodisDb() throws IOException {
         jodisCollection = new ConcurrentHashMap<>();
         executorFactory = new ExecutorFactory(this);
-        // todo 配置
-        aofWriter = new AofWriter("", "");
         requestQueue = new ArrayList<>(10);
         rewriteAof = new AtomicBoolean(false);
     }

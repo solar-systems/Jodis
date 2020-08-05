@@ -1,0 +1,15 @@
+########## Jodis Properties ##########
+
+
+# jodis server port listen on
+jodis.port=6059
+
+# persistence log directory
+log.dir=log/
+
+# JDB log file name
+log.jdb=default.jdb
+
+# AOF log file name
+log.aof=default.aof
+
