@@ -2,7 +2,7 @@ package cn.abelib.jodis.server;
 
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.network.SocketServer;
-import cn.abelib.jodis.network.jodis.JodisHandler;
+import cn.abelib.jodis.protocol.JodisHandler;
 import cn.abelib.jodis.utils.Logger;
 import com.google.common.base.Stopwatch;
 

@@ -13,6 +13,8 @@ public class StringUtils {
 
     public static String CLRF = "\r\n";
 
+    public static String NIL = "nil";
+
     public static boolean isEmpty(String str) {
         return EMPTY.equals(str);
     }
@@ -21,6 +23,12 @@ public class StringUtils {
         return Objects.nonNull(str) && !EMPTY.equals(str);
     }
 
+    /**
+     * todo IgnoreCase?
+     * @param str1
+     * @param str2
+     * @return
+     */
     public static boolean equals(String str1, String str2) {
         if (Objects.isNull(str1) || Objects.isNull(str2)) {
             return false;

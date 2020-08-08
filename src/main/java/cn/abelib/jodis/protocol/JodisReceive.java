@@ -1,4 +1,4 @@
-package cn.abelib.jodis.network.jodis;
+package cn.abelib.jodis.protocol;
 
 import cn.abelib.jodis.network.Receive;
 import cn.abelib.jodis.utils.Logger;
@@ -37,7 +37,7 @@ public class JodisReceive implements Receive {
     }
 
     @Override
-    public int readFrom(SocketChannel socketChannel) {
+    public int read(SocketChannel socketChannel) {
         int read = 0;
         byteBuffer.clear();
         try {

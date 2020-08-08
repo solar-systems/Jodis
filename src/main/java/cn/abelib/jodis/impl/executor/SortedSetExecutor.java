@@ -2,6 +2,7 @@ package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.operation.SortedSetOperation;
+import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class SortedSetExecutor implements Executor {
     }
 
     @Override
-    public Response execute(String cmd, List<String> params) {
+    public Response execute(Request request) {
         return null;
     }
 }

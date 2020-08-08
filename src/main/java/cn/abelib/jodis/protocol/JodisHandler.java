@@ -1,10 +1,12 @@
-package cn.abelib.jodis.network.jodis;
+package cn.abelib.jodis.protocol;
 
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.network.Receive;
 import cn.abelib.jodis.network.RequestHandler;
 import cn.abelib.jodis.network.Send;
+import cn.abelib.jodis.utils.BufferUtils;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -20,10 +22,15 @@ public class JodisHandler implements RequestHandler {
     @Override
     public Send handle(Receive receive) {
         ByteBuffer buffer = receive.buffer();
-        buffer.flip();
-        System.err.println("Receive total bytes:  " + (buffer.remaining() - 1));
+        String request = BufferUtils.toUTF8String(buffer);
 
+        Response response;
+        try {
+            response = jodisDb.execute(request);
+        } catch (IOException e) {
+            response = ErrorResponse.errorCommon();
+        }
 
-        return new JodisSend();
+        return new JodisSend(response);
     }
 }

@@ -3,6 +3,8 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisList;
 import cn.abelib.jodis.impl.JodisObject;
+import cn.abelib.jodis.utils.CollectionUtils;
+import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 
 import java.util.*;
@@ -33,61 +35,6 @@ public class ListOperation extends KeyOperation{
     }
 
     /**
-     *  todo
-     * Redis command: BLPOP
-     * @param key
-     * @param timeout
-     * @return
-     */
-    public String blockingLeftPop(String key, long timeout) {
-        return null;
-    }
-
-    /**
-     *  todo
-     * Redis command: BLPOP
-     * @param keys
-     * @param timeout
-     * @return
-     */
-    public String blockingLeftPop(Collection<String> keys, long timeout) {
-        return null;
-    }
-
-    /**
-     *  todo
-     * Redis command: BLPOP
-     * @param key
-     * @param timeout
-     * @return
-     */
-    public String blockingRightPop(String key, long timeout) {
-        return null;
-    }
-
-    /**
-     *  todo
-     * Redis command: BRPOP
-     * @param keys
-     * @param timeout
-     * @return
-     */
-    public String blockingRightPop(Collection<String> keys, long timeout) {
-        return null;
-    }
-
-    /**
-     * todo
-     * Redis command: BRPOPLPUSH
-     * @param source
-     * @param destination
-     * @param timeout
-     */
-    public void blockingRightPopLeftPush(String source, String destination, long timeout) {
-
-    }
-
-    /**
      * Redis command: LINDEX
      * @param key
      * @param index
@@ -95,7 +42,7 @@ public class ListOperation extends KeyOperation{
      */
     public String leftIndex(String key, int index) {
         if (!exists(key) || index >= listLength(key) || index < 0) {
-            return null;
+            return StringUtils.NIL;
         }
         List<String> value = getList(key);
         return value.get(index);
@@ -124,7 +71,7 @@ public class ListOperation extends KeyOperation{
         List<String> value = getList(key);
         if (Objects.isNull(value)) {
             value = Lists.newLinkedList();
-            jodisCollection.put(key, JodisObject.putJodisList(value));
+            this.jodisDb.put(key, JodisObject.putJodisList(value));
         }
         value.addAll(0, values);
         return value.size();
@@ -150,7 +97,7 @@ public class ListOperation extends KeyOperation{
         List<String> value = getList(key);
         if (Objects.isNull(value)) {
             value = Lists.newLinkedList();
-            jodisCollection.put(key, JodisObject.putJodisList(value));
+            this.jodisDb.put(key, JodisObject.putJodisList(value));
         }
         value.addAll(values);
         return value.size();
@@ -219,26 +166,53 @@ public class ListOperation extends KeyOperation{
     }
 
     /**
-     * Redis command: LINSERT
+     *  todo test
+     * Redis command: LINSERT BEFORE
      * @param key
-     * @param index
+     * @param exists
      * @param value
      * @return
      */
-    public int leftInsert(String key, int index, String value) {
+    public int leftInsert(String key, String exists, String value) {
         List<String> values = getList(key);
         if (Objects.isNull(values)) {
             return 0;
         }
         int len = values.size();
-        if (index > len || index < 0) {
-            return 0;
+        int index = CollectionUtils.listIndex(values, exists);
+        if (index < 0) {
+            return -1;
         } else if (index == len) {
             values.add(value);
         } else {
             values.add(index, value);
         }
-        return 1;
+        return values.size();
+    }
+
+    /**
+     *  todo test
+     * Redis command: LINSERT AFTER
+     * @param key
+     * @param exists
+     * @param value
+     * @return
+     */
+    public int rightInsert(String key, String exists, String value) {
+        List<String> values = getList(key);
+        if (Objects.isNull(values)) {
+            return 0;
+        }
+        int len = values.size();
+        int index = CollectionUtils.listIndex(values, exists);
+        if (index < 0) {
+            return -1;
+        } else if (index == len) {
+            values.add(value);
+        } else {
+            values.add(index + 1, value);
+        }
+        return values.size();
     }
 
     /**

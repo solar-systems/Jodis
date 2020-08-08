@@ -7,7 +7,16 @@ import java.nio.channels.SocketChannel;
  * @Date: 2020-07-30 22:46
  */
 public interface Send {
-    int writeTo(SocketChannel socketChannel);
+    /**
+     * write to SocketChannel
+     * @param socketChannel
+     * @return
+     */
+    int write(SocketChannel socketChannel);
 
-    boolean complete();
+    /**
+     * completed write data
+     * @return
+     */
+    boolean completed();
 }

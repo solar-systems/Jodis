@@ -36,7 +36,7 @@ public class SortedSetOperation extends KeyOperation {
             zSet = getJodisZSet(key);
         } else {
             zSet = new JodisSortedSet();
-            jodisCollection.put(key, JodisObject.putJodisZSet(zSet));
+            this.jodisDb.put(key, JodisObject.putJodisZSet(zSet));
         }
         Map<String, Double> map = zSet.getHolder();
         SkipList skipList = zSet.getSkipList();

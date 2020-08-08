@@ -2,9 +2,9 @@ package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.operation.SetOperation;
+import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 
-import java.util.List;
 
 /**
  * @Author: abel.huang
@@ -20,7 +20,7 @@ public class SetExecutor implements Executor {
     }
 
     @Override
-    public Response execute(String cmd, List<String> params) {
+    public Response execute(Request request) {
         return null;
     }
 }

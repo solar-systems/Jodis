@@ -47,7 +47,7 @@ public class SetOperation extends KeyOperation {
         }
 
         if (set.add(member)) {
-            jodisCollection.put(key, JodisObject.putJodisSet(set));
+            this.jodisDb.put(key, JodisObject.putJodisSet(set));
             return 1;
         }
         return 0;

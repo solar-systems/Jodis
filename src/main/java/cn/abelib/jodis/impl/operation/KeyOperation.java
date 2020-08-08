@@ -9,35 +9,21 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-
 /**
  * @author abel.huang
  * @date 2020/6/30 17:44
  */
 public class KeyOperation extends AbstractOperation {
-
     public KeyOperation(JodisDb jodisDb) {
         super(jodisDb);
     }
 
     public JodisObject jodisObject(String key) {
-        return jodisCollection.get(key);
-    }
-
-    /**
-     * todo
-     * 校验数据类型是否合法
-     * @param key
-     * @param type
-     * @return
-     */
-    public boolean matchType(String key, String type) {
-        JodisObject jodisObject = jodisObject(key);
-        return type.equals(jodisObject.type());
+        return this.jodisDb.get(key);
     }
 
     public int size() {
-        return jodisCollection.size();
+        return jodisDb.size();
     }
 
     /**
@@ -57,17 +43,12 @@ public class KeyOperation extends AbstractOperation {
      * @param key
      * @return
      */
-    public void delete(String key) {
-        jodisCollection.remove(key);
-    }
-
-    /**
-     * Redis command: DUMP
-     * @param key
-     * @return
-     */
-    public String dump(String key) {
-        throw new UnsupportedOperationException();
+    public int delete(String key) {
+        if (this.jodisDb.containsKey(key)) {
+            this.jodisDb.remove(key);
+            return 1;
+        }
+        return 0;
     }
 
     /**
@@ -76,7 +57,7 @@ public class KeyOperation extends AbstractOperation {
      * @return
      */
     public boolean exists(String key) {
-        return jodisCollection.containsKey(key);
+        return this.jodisDb.containsKey(key);
     }
 
     /**
@@ -84,8 +65,8 @@ public class KeyOperation extends AbstractOperation {
      * @param key
      * @return
      */
-    public long expire(String key, long timestamp, TimeUnit unit) {
-        return 0L;
+    public int expire(String key, long timestamp, TimeUnit unit) {
+        return 0;
     }
 
     /**
@@ -93,10 +74,9 @@ public class KeyOperation extends AbstractOperation {
      * @param key
      * @return
      */
-    public long expireAt(String key, long timestamp, TimeUnit unit) {
-        return 0L;
+    public int expireAt(String key, long timestamp, TimeUnit unit) {
+        return 0;
     }
-
 
     /**
      * Redis command: KEYS
@@ -105,20 +85,12 @@ public class KeyOperation extends AbstractOperation {
      */
     public List<String> keys(String pattern) {
         if (StringUtils.equals(OperationConstants.WILD_CARD_START, pattern)) {
-            return  new ArrayList<>(jodisCollection.keySet());
+            return new ArrayList<>(this.jodisDb.keySet());
         }
-        return jodisCollection.keySet()
+        return this.jodisDb.keySet()
                 .stream()
                 .filter(key -> key.startsWith(pattern))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Redis command: PERSIST
-     * @param key
-     */
-    public void persist(String key) {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -127,8 +99,8 @@ public class KeyOperation extends AbstractOperation {
      * @param unit
      * @return
      */
-    public long ttl(String key, TimeUnit unit) {
-        return 0L;
+    public int ttl(String key, long timestamp, TimeUnit unit) {
+        return 0;
     }
 
     /**
@@ -142,7 +114,7 @@ public class KeyOperation extends AbstractOperation {
         }
         JodisObject value = jodisObject(key);
         delete(key);
-        jodisCollection.put(newKey, value);
+        this.jodisDb.put(newKey, value);
         return true;
     }
 
@@ -164,7 +136,7 @@ public class KeyOperation extends AbstractOperation {
      */
     public String randomKey(){
         if (size() > 0) {
-            return jodisCollection.keys().nextElement();
+            return this.jodisDb.keySet().iterator().next();
         }
         return null;
     }

@@ -1,6 +1,6 @@
 package cn.abelib.jodis.network;
 
-import cn.abelib.jodis.network.jodis.JodisReceive;
+import cn.abelib.jodis.protocol.JodisReceive;
 import cn.abelib.jodis.utils.Closeables;
 import cn.abelib.jodis.utils.Logger;
 import com.google.common.base.Throwables;
@@ -80,7 +80,7 @@ public class Processor extends AbstractServerThread {
                         close(key);
                     } catch (Throwable t) {
                         Socket socket = channelFor(key).socket();
-                        final String msg = "Closing socket for {}:{} becaulse of error {}";
+                        final String msg = "Closing socket for {}:{} because of error {}";
                         logger.info(msg, socket.getInetAddress(), socket.getPort(), Throwables.getStackTraceAsString(t));
                         close(key);
                     }
@@ -110,8 +110,8 @@ public class Processor extends AbstractServerThread {
     private void write(SelectionKey key) throws IOException {
         Send response = (Send) key.attachment();
         SocketChannel socketChannel = channelFor(key);
-        response.writeTo(socketChannel);
-        if (response.complete()) {
+        response.write(socketChannel);
+        if (response.completed()) {
             key.attach(null);
             key.interestOps(SelectionKey.OP_READ);
         } else {
@@ -129,7 +129,7 @@ public class Processor extends AbstractServerThread {
         } else {
             request = (Receive) key.attachment();
         }
-        int read = request.readFrom(socketChannel);
+        int read = request.read(socketChannel);
         if (read < 0) {
             close(key);
             // 表示暂时还未读完

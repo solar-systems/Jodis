@@ -1,6 +1,6 @@
 package cn.abelib.jodis.network;
 
-import cn.abelib.jodis.network.jodis.JodisHandler;
+import cn.abelib.jodis.protocol.JodisHandler;
 import cn.abelib.jodis.server.JodisConfig;
 import cn.abelib.jodis.utils.Closeables;
 import cn.abelib.jodis.utils.Logger;

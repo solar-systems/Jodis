@@ -3,11 +3,12 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisObject;
 import cn.abelib.jodis.impl.JodisString;
-import cn.abelib.jodis.utils.ByteUtils;
 import cn.abelib.jodis.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: abel.huang
@@ -34,7 +35,7 @@ public class StringOperation extends KeyOperation {
      * @return
      */
     public int set(String key, String value) {
-        jodisCollection.put(key, JodisObject.putJodisString(value));
+        this.jodisDb.put(key, JodisObject.putJodisString(value));
         return value.length();
     }
 
@@ -52,6 +53,7 @@ public class StringOperation extends KeyOperation {
 
     /**
      * Redis command: GETRANGE
+     * 不支持负数(Redis是支持的)
      * @param key
      * @param start
      * @param end
@@ -82,11 +84,19 @@ public class StringOperation extends KeyOperation {
      * @param value
      * @return
      */
-    public String setRange(String key, int offset, String value) {
-        return null;
+    public int setRange(String key, int offset, String value) {
+        if (!exists(key)) {
+            return 0;
+        }
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        return 0;
     }
 
     /**
+     * todo
      * Redis command: GETSET
      * @param key
      * @param value
@@ -125,34 +135,29 @@ public class StringOperation extends KeyOperation {
     }
 
     /**
-     *  todo
      * Redis command: MGET
      * @param keys
      * @return
      */
-    public List<String> multiGet(String ... keys) {
-        return null;
+    public List<String> multiGet(List<String> keys) {
+        List<String> values = new ArrayList<>(keys.size());
+        keys.forEach(key -> {
+            String value = get(key);
+            values.add(StringUtils.isEmpty(value) ? StringUtils.NIL : value);
+        });
+        return values;
     }
 
     /**
-     *  todo
      * Redis command: MSET
-     * @param keys
+     * @param keyValues
      * @return
      */
-    public List<String> multiSet(String ... keys) {
-        return null;
-    }
-
-
-    /**
-     *  todo
-     * Redis command: MSETNX
-     * @param keys
-     * @return
-     */
-    public List<String> multiGSetIfNotExist(String ... keys) {
-        return null;
+    public void multiSet(List<String> keyValues) {
+        int len = keyValues.size();
+        for (int i = 0; i < len; i += 2) {
+            set(keyValues.get(i), keyValues.get(i + 1));
+        }
     }
 
     /**
@@ -167,34 +172,6 @@ public class StringOperation extends KeyOperation {
         }
         String old = get(key);
         return set(key, old + value);
-    }
-
-    /**
-     *  todo
-     * Redis command: GETBIT
-     * @param key
-     * @param offset
-     */
-    public int getBit(String key, int offset) {
-        if (!exists(key)) {
-            return 0;
-        }
-        byte[] bytes = ByteUtils.getBytesUTF8(get(key));
-        int len = bytes.length;
-        if (offset < 0 || offset >= len) {
-            return 0;
-        }
-        return bytes[offset];
-    }
-
-    /**
-     * todo
-     * Redis command: SETBIT
-     * @param key
-     * @param offset
-     */
-    public void setBit(String key, int offset) {
-
     }
 
     /**
@@ -269,5 +246,20 @@ public class StringOperation extends KeyOperation {
     public int decrementBy(String key, int decrAmount) {
         int decr = 0 - decrAmount;
        return incrementBy(key, decr);
+    }
+
+    /**
+     * todo
+     * not support now
+     * Redis command: SETEX
+     * @param key
+     * @param timeout
+     * @param value
+     * @return
+     */
+    public boolean setExpire(String key, int timeout, String value) {
+        set(key, value);
+        expire(key, timeout, TimeUnit.SECONDS);
+        return true;
     }
 }

@@ -3,6 +3,7 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.operation.StringOperation;
 import cn.abelib.jodis.utils.StringUtils;
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +40,7 @@ public class StringOperationtTest {
         Assert.assertEquals(stringOperation.getRange("hello", 1, 1), "o");
         Assert.assertEquals(stringOperation.getRange("hello", -1, 6), "world");
         Assert.assertEquals(stringOperation.getRange("hello", 4, 4), "d");
+        Assert.assertSame(stringOperation.getRange("hello", 0, 0).length(), 1);
     }
 
     @Test
@@ -88,5 +90,19 @@ public class StringOperationtTest {
         System.out.println(stringOperation.incrementByFloat("jodis1", 1.0F));
         System.out.println(stringOperation.incrementByFloat("jodis1", 5.21F));
         System.out.println(stringOperation.incrementByFloat("jodis1", -13.14F));
+    }
+
+    @Test
+    public void multiGetTest() {
+        stringOperation.set("jodis1", "jodis_value1");
+        stringOperation.set("jodis2", "jodis_value2");
+
+        System.err.println(stringOperation.multiGet(Lists.newArrayList("jodis1", "jodis2")));
+    }
+
+    @Test
+    public void multiSetTest() {
+        stringOperation.multiSet(Lists.newArrayList("jodis1", "jodis_value1", "jodis2", "jodis_value2"));
+        System.err.println(stringOperation.multiGet(Lists.newArrayList("jodis1", "jodis2")));
     }
 }

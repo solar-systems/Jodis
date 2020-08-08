@@ -11,6 +11,7 @@ import java.util.*;
  * @Date: 2020-07-12 18:18
  */
 public class HashOperation extends KeyOperation {
+
     public HashOperation(JodisDb jodisDb) {
         super(jodisDb);
     }
@@ -58,7 +59,7 @@ public class HashOperation extends KeyOperation {
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
             map = new HashMap<>(8);
-            jodisCollection.put(key, JodisObject.putJodisHash(map));
+            this.jodisDb.put(key, JodisObject.putJodisHash(map));
         }
         return Objects.isNull(map.put(field, value));
     }
@@ -141,7 +142,7 @@ public class HashOperation extends KeyOperation {
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
             map = new HashMap<>(8);
-            jodisCollection.put(key, JodisObject.putJodisHash(map));
+            this.jodisDb.put(key, JodisObject.putJodisHash(map));
         }
         String value = map.get(filed);
         int res = incrNumber;
@@ -180,7 +181,7 @@ public class HashOperation extends KeyOperation {
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
             map = new HashMap<>(8);
-            jodisCollection.put(key, JodisObject.putJodisHash(map));
+            this.jodisDb.put(key, JodisObject.putJodisHash(map));
         }
         String value = map.get(filed);
         float res = incrNumber;

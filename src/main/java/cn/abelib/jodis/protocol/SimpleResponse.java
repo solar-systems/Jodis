@@ -7,21 +7,23 @@ import cn.abelib.jodis.utils.StringUtils;
  * @date 2020/6/30 18:48
  */
 public class SimpleResponse implements Response {
-    private String prefix = ProtocolConstant.SIMPLE_STRING_PREFIX;
     private String content;
 
     public SimpleResponse(String content) {
         this.content = content;
     }
 
-    @Override
-    public String prefix() {
-        return this.prefix;
+    public static SimpleResponse simpleResponse(String content) {
+        return new SimpleResponse(content);
+    }
+
+    public static SimpleResponse ok() {
+        return new SimpleResponse("OK");
     }
 
     @Override
     public String toRespString() {
-        return this.prefix + content + StringUtils.CLRF;
+        return ProtocolConstant.SIMPLE_STRING_PREFIX + content + StringUtils.CLRF;
     }
 
     @Override
@@ -31,14 +33,6 @@ public class SimpleResponse implements Response {
 
     @Override
     public String toString() {
-        return super.toString();
-    }
-
-    public static SimpleResponse ok() {
-        return new SimpleResponse("OK");
-    }
-
-    public static SimpleResponse result(String content) {
-        return new SimpleResponse(content);
+        return this.toRespString();
     }
 }

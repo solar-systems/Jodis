@@ -9,7 +9,7 @@ Jodis is keyvalue db, the goal is to achieve most standalone feature for [Redis]
 2. JodisList
 3. JodisMap
 4. JodisSet
-5. JodisZSet
+5. JodisSortedSet
 
 ### WAL
 Similar with Redis AOF, but only support sync.
@@ -22,12 +22,13 @@ Similar with Redis AOF, but only support sync.
 Similar with Redis RDB.
 1. Async per write operation base on aof;
 2. Recover from snapshot.
+
+### Network interface
+1. Single Network Thread, Single I/O Thread;
+2. Support RESP2 text protocol.
+
+### LRU(TODO)
+
 ### TTL(TODO)
 
-### Network interface(TODO)
-Multi Network Thread, Single I/O Thread.
-
-### LRU
-
-### CronJob
 

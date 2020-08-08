@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
  * @Date: 2020-07-30 22:46
  */
 public interface Receive {
-    int readFrom(SocketChannel socketChannel);
+    int read(SocketChannel socketChannel);
 
     boolean complete();
 

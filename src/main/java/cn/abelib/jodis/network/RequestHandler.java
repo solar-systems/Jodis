@@ -6,5 +6,10 @@ package cn.abelib.jodis.network;
  */
 public interface RequestHandler {
 
+    /**
+     * Handle request and send response
+     * @param receive
+     * @return
+     */
     Send handle(Receive receive);
 }
