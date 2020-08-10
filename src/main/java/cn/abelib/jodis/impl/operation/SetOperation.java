@@ -4,6 +4,10 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisObject;
 import cn.abelib.jodis.impl.JodisSet;
+import cn.abelib.jodis.utils.CollectionUtils;
+import cn.abelib.jodis.utils.StringUtils;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.util.*;
 
@@ -32,6 +36,13 @@ public class SetOperation extends KeyOperation {
         return null;
     }
 
+    private Set<String> getSets(String key) {
+        if (exists(key)) {
+            return getJodisSet(key).getHolder();
+        }
+        return Sets.newHashSet();
+    }
+
     /**
      * Redis command: SADD
      *
@@ -39,15 +50,15 @@ public class SetOperation extends KeyOperation {
      * @return
      */
     public int setAdd(String key, String member) {
-        Set<String> set;
-        if (exists(key)) {
-            set = getSet(key);
-        } else {
+        Set<String> set = getSet(key);
+        if (Objects.isNull(set)) {
             set = new HashSet<>();
+            set.add(member);
+            this.jodisDb.put(key, JodisObject.putJodisSet(set));
+            return 0;
         }
 
         if (set.add(member)) {
-            this.jodisDb.put(key, JodisObject.putJodisSet(set));
             return 1;
         }
         return 0;
@@ -60,11 +71,12 @@ public class SetOperation extends KeyOperation {
      * @return
      */
     public int setCard(String key) {
-        if (!exists(key)) {
+        JodisSet set = getJodisSet(key);
+        if (Objects.isNull(set)) {
             return 0;
         }
-        JodisSet set = getJodisSet(key);
-        return Objects.isNull(set) ? 0 : set.size();
+
+        return set.size();
     }
 
     /**
@@ -75,10 +87,10 @@ public class SetOperation extends KeyOperation {
      * @return
      */
     public boolean setIsMember(String key, String member) {
-        if (!exists(key)) {
+        Set<String> set = getSet(key);
+        if (Objects.isNull(set)) {
             return false;
         }
-        Set<String> set = getSet(key);
         return set.contains(member);
     }
 
@@ -88,11 +100,12 @@ public class SetOperation extends KeyOperation {
      * @param key
      * @return
      */
-    public Set<String> setMembers(String key) {
-        if (!exists(key)) {
-            return null;
+    public List<String> setMembers(String key) {
+        Set<String> set = getSet(key);
+        if (Objects.isNull(set)) {
+            return Lists.newArrayList();
         }
-        return getSet(key);
+        return Lists.newArrayList(set);
     }
 
     /**
@@ -102,25 +115,24 @@ public class SetOperation extends KeyOperation {
      * @return
      */
     public String setRandMember(String key) {
-        if (!exists(key)) {
-            return null;
+        Set<String> set = getSet(key);
+        if (Objects.isNull(set)) {
+            return StringUtils.NIL;
         }
-        return getSet(key).iterator().next();
+        return set.iterator().next();
     }
 
-    public Collection<String> setUnion(String... keys) {
-        return null;
-    }
-
-    public Collection<String> setInner(String... keys) {
-        return null;
-    }
-
+    /**
+     * Redis command: SREM
+     * @param key
+     * @param member
+     * @return
+     */
     public boolean setRemove(String key, String member) {
-        if (!exists(key)) {
+        Set<String> set = getSet(key);
+        if (Objects.isNull(set)) {
             return false;
         }
-        Set<String> set = getSet(key);
         return set.remove(member);
     }
 
@@ -140,19 +152,42 @@ public class SetOperation extends KeyOperation {
     }
 
     /**
-     * todo
-     * Redis command: SDIFFSTORE
+     * Redis command: SDIFF
+     * 只接受两个参数
      */
-    public int setDiffStore() {
-        return 0;
+    public List<String> setDiff(String key1, String key2) {
+        Set<String> set1 = getSets(key1);
+        Set<String> set2 = getSets(key2);
+        return Lists.newArrayList(CollectionUtils.diffSet(set1, set2));
     }
 
     /**
-     * todo
-     * Redis command: SDIFF
+     * Redis command: SUNION
+     * 只接受两个参数
      */
-    public List<String> setDiff() {
-        return null;
+    public List<String> setUnion(String key1, String key2) {
+        Set<String> set1 = getSets(key1);
+        Set<String> set2 = getSets(key2);
+        if (set1.isEmpty()) {
+            return Lists.newArrayList(set2);
+        }
+        if (set2.isEmpty()) {
+            return Lists.newArrayList(set1);
+        }
+        return Lists.newArrayList(CollectionUtils.unionSet(set1, set2));
+    }
+
+    /**
+     * Redis command: SINTER
+     * 只接受两个参数
+     */
+    public List<String> setInter(String key1, String key2) {
+        Set<String> set1 = getSets(key1);
+        Set<String> set2 = getSets(key2);
+        if (set1.isEmpty() || set2.isEmpty()) {
+            return Lists.newArrayList();
+        }
+        return Lists.newArrayList(CollectionUtils.interSet(set1, set2));
     }
 
     /**
@@ -161,23 +196,7 @@ public class SetOperation extends KeyOperation {
      * @return
      */
     public List<String> setScan() {
-        return null;
-    }
-
-    /**
-     * todo
-     * Redis command: SINTERSTORE
-     */
-    public int setInterStore() {
-        return 0;
-    }
-
-    /**
-     *  todo
-     * Redis command: SUNIONSTORE
-     */
-    public int setUnionStore() {
-        return 0;
+        return Lists.newArrayList();
     }
 
     /**
@@ -186,12 +205,9 @@ public class SetOperation extends KeyOperation {
      * @return
      */
     public String setPop(String key) {
-        if (!exists(key)) {
-            return null;
-        }
         Set<String> set = getSet(key);
-        if (set.isEmpty()) {
-            return null;
+        if (Objects.isNull(set) || set.isEmpty()) {
+            return StringUtils.NIL;
         }
         String member = set.iterator().next();
         set.remove(member);

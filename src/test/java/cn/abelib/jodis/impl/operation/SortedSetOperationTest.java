@@ -42,4 +42,25 @@ public class SortedSetOperationTest {
         System.out.println(sortedSetOperation.zCard("jodis1"));
         Assert.assertEquals(sortedSetOperation.size(), 1);
     }
+
+    @Test
+    public void zCountTest() {
+        sortedSetOperation.zAdd("jodis1", 1.0, "jodis_filed_1");
+        sortedSetOperation.zAdd("jodis1", 2.0, "jodis_filed_2");
+        sortedSetOperation.zAdd("jodis1", 3.0, "jodis_filed_3");
+
+        Assert.assertEquals(sortedSetOperation.zCount("jodis1", 1.0, 2.0), 2);
+    }
+
+    @Test
+    public void zRemoveTest() {
+        sortedSetOperation.zAdd("jodis1", 1.0, "jodis_filed_1");
+        sortedSetOperation.zAdd("jodis1", 2.0, "jodis_filed_2");
+        sortedSetOperation.zAdd("jodis1", 3.0, "jodis_filed_3");
+
+        Assert.assertEquals(sortedSetOperation.zRemove("jodis1", "jodis_filed_1"), 1);
+        System.out.println(sortedSetOperation.getJodisZSet("jodis1").getHolder());
+        System.out.println(sortedSetOperation.getJodisZSet("jodis1").getSkipList().scores());
+        System.out.println(sortedSetOperation.getJodisZSet("jodis1").getSkipList().values());
+    }
 }

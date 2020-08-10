@@ -5,11 +5,11 @@ Jodis is keyvalue db, the goal is to achieve most standalone feature for [Redis]
 ### in-memory key-value database
 
 ### Support Structure
-1. JodisString
-2. JodisList
-3. JodisMap
-4. JodisSet
-5. JodisSortedSet
+1. [JodisString](docs/JodisString.md)
+2. [JodisList](docs/JodisList.md)
+3. [JodisHash](docs/JodisHash.md)
+4. [JodisSet](docs/JodisSet.md)
+5. [JodisSortedSet](docs/JodisSortedSet.md)
 
 ### WAL
 Similar with Redis AOF, but only support sync.

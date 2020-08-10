@@ -25,4 +25,9 @@ public class JodisHash {
     public int size() {
         return this.holder.size();
     }
+
+    @Override
+    public String toString() {
+        return this.holder.toString();
+    }
 }

@@ -25,6 +25,22 @@ public class SortedSetOperation extends KeyOperation {
         return (JodisSortedSet)jodisObject.getValue();
     }
 
+    private SkipList getSkipList(String key) {
+        JodisSortedSet set = getJodisZSet(key);
+        if (Objects.isNull(set)) {
+            return null;
+        }
+        return set.getSkipList();
+    }
+
+    private Map<String, Double> getHolder(String key) {
+        JodisSortedSet set = getJodisZSet(key);
+        if (Objects.isNull(set)) {
+            return null;
+        }
+        return set.getHolder();
+    }
+
     /**
      * Redis command: ZADD
      * @param key
@@ -74,5 +90,48 @@ public class SortedSetOperation extends KeyOperation {
         JodisSortedSet set = getJodisZSet(key);
         Map<String, Double> map = set.getHolder();
         return map.get(member);
+    }
+
+    /**
+     * Redis command: ZCOUNT
+     * @param key
+     * @param min
+     * @param max
+     * @return
+     */
+    public int zCount(String key, double min, double max) {
+        SkipList skipList = getSkipList(key);
+        if (Objects.isNull(skipList)) {
+            return 0;
+        }
+        int count = 0;
+
+        for (double score : skipList.scores()) {
+            if (score < min) {
+                continue;
+            }
+            if (score >= min && score <= max) {
+                count++;
+            }
+            if (score > max) {
+                break;
+            }
+        }
+        return count;
+    }
+
+    public int zRemove(String key, String member) {
+        SkipList skipList = getSkipList(key);
+        Map<String, Double> map = getHolder(key);
+        if (Objects.isNull(skipList) || Objects.isNull(map)) {
+            return 0;
+        }
+        Double score = map.get(member);
+        if (Objects.isNull(score)) {
+            return 0;
+        }
+        map.remove(member);
+        skipList.delete(score, member);
+        return 1;
     }
 }

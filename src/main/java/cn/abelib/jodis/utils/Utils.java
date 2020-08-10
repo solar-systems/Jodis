@@ -37,4 +37,13 @@ public class Utils {
     public static float toFloat(String s) {
         return 0;
     }
+
+    /**
+     * todo
+     * @param s
+     * @return
+     */
+    public static double toDouble(String s) {
+        return 0;
+    }
 }

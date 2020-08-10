@@ -3,6 +3,9 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisHash;
 import cn.abelib.jodis.impl.JodisObject;
+import cn.abelib.jodis.utils.StringUtils;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.*;
 
@@ -24,11 +27,6 @@ public class HashOperation extends KeyOperation {
         return (JodisHash)jodisObject.getValue();
     }
 
-    /**
-     * Redis command: HGETALL
-     * @param key
-     * @return
-     */
     public Map<String, String> getHash(String key) {
         if (exists(key)) {
             return getJodisHash(key).getHolder();
@@ -44,10 +42,28 @@ public class HashOperation extends KeyOperation {
     public String hashGet(String key, String field){
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
-            return null;
+            return StringUtils.NIL;
         }
+        String value = map.get(field);
+        return StringUtils.isEmpty(value) ? StringUtils.NIL : value;
+    }
 
-        return map.get(field);
+    /**
+     * Redis command: HGETALL
+     * @param key
+     * @return
+     */
+    public List<String> hashGetAll(String key){
+        Map<String, String> map = getHash(key);
+        List<String> list = Lists.newArrayList();
+        if (Objects.isNull(map)) {
+            return list;
+        }
+        map.forEach((k, v) -> {
+            list.add(k);
+            list.add(v);
+        });
+        return list;
     }
 
     /**
@@ -83,12 +99,12 @@ public class HashOperation extends KeyOperation {
      * @param key
      * @return
      */
-    public Set<String> hashKeys(String key) {
+    public List<String> hashKeys(String key) {
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
-            return null;
+            return Lists.newArrayList();
         }
-        return map.keySet();
+        return Lists.newArrayList(map.keySet()) ;
     }
 
     /**
@@ -96,12 +112,12 @@ public class HashOperation extends KeyOperation {
      * @param key
      * @return
      */
-    public Collection<String> hashValues(String key) {
+    public List<String> hashValues(String key) {
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
-            return null;
+            return Lists.newArrayList();
         }
-        return map.values();
+        return Lists.newArrayList(map.values());
     }
 
     /**
@@ -110,10 +126,11 @@ public class HashOperation extends KeyOperation {
      * @return
      */
     public int hashLen(String key) {
-        if (!exists(key)) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
             return 0;
         }
-        return getJodisHash(key).size();
+        return map.size();
     }
 
     /**
@@ -141,7 +158,7 @@ public class HashOperation extends KeyOperation {
     public int hashIncrementBy(String key, String filed, int incrNumber) {
         Map<String, String> map = getHash(key);
         if (Objects.isNull(map)) {
-            map = new HashMap<>(8);
+            map = Maps.newHashMap();
             this.jodisDb.put(key, JodisObject.putJodisHash(map));
         }
         String value = map.get(filed);
@@ -193,5 +210,25 @@ public class HashOperation extends KeyOperation {
 
         }
         return res;
+    }
+
+    /**
+     * todo
+     * @param key
+     * @param fieldValues
+     * @return
+     */
+    public boolean hashMultiSet(String key, List<String> fieldValues) {
+        return true;
+    }
+
+    /**
+     * todo
+     * @param key
+     * @param fields
+     * @return
+     */
+    public List<String> hashMultiGet(String key, List<String> fields) {
+        return Lists.newArrayList();
     }
 }

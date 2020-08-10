@@ -20,4 +20,9 @@ public class JodisString {
     public int size() {
         return this.holder.length();
     }
+
+    @Override
+    public String toString() {
+        return this.holder;
+    }
 }

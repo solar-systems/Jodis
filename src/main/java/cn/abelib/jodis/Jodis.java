@@ -15,6 +15,7 @@ import java.util.Properties;
 /**
  * @Author: abel.huang
  * @Date: 2020-07-06 23:51
+ * Independent deployment jodis server
  * Java Object Dictionary Server
  */
 public class Jodis implements Closeable {

@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class Request {
     private String request;
-    private boolean needLog;
+    private boolean needLog = false;
     private String command;
     private List<String> args;
     private Response response;
@@ -21,9 +21,18 @@ public class Request {
 
     public Request() {}
 
+    /**
+     * command为大写模式
+     * @param command
+     * @param args
+     */
     public Request(String command, List<String> args) {
-        this.command = command;
+        this.command = command.toUpperCase();
         this.args = args;
+        // 判断是否需要写入日志
+        if (ProtocolConstant.NEED_LOGS.contains(this.command)) {
+            this.needLog = true;
+        }
     }
 
     public boolean needLog() {

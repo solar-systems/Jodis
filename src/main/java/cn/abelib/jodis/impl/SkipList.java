@@ -1,11 +1,15 @@
 package cn.abelib.jodis.impl;
 
+import cn.abelib.jodis.utils.KV;
+import cn.abelib.jodis.utils.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @Author: abel.huang
  * @Date: 2020-07-06 23:51
+ *  todo Iterator
  */
 public class SkipList {
     private static final double DEFAULT_SKIP_LIST_P = 0.5;
@@ -29,16 +33,14 @@ public class SkipList {
 
         @Override
         public String toString() {
-            StringBuilder builder = new StringBuilder();
-            builder.append("{ score: ");
-            builder.append(score);
-            builder.append("; level: ");
-            builder.append(level);
-            builder.append("; value: ");
-            builder.append(value);
-            builder.append(" }");
-
-            return builder.toString();
+            return  new StringBuilder()
+                    .append("{ score: ")
+                    .append(score)
+                    .append("; level: ")
+                    .append(level)
+                    .append("; value: ")
+                    .append(value)
+                    .append(" }").toString();
         }
     }
 
@@ -108,6 +110,20 @@ public class SkipList {
         return null;
     }
 
+    public String find(double score, String value) {
+        SkipNode node = head;
+        for (int i = currentMaxLevel - 1; i >= 0; i--) {
+            while (node.next[i] != null && node.next[i].score < score) {
+                node = node.next[i];
+            }
+        }
+        // 找到该数据
+        if (node.next[0] != null && node.next[0].score == score && StringUtils.equals(value, node.next[0].value)) {
+            return  node.next[0].value;
+        }
+        return null;
+    }
+
     public void delete(double score) {
         SkipNode node = head;
         /**
@@ -118,6 +134,28 @@ public class SkipList {
         if (node.next[0] != null && node.next[0].score == score) {
             for (int i = currentMaxLevel - 1; i >= 0; i--) {
                 if (update[i].next[i] != null && update[i].next[i].score == score) {
+                    update[i].next[i] = update[i].next[i].next[i];
+                }
+            }
+        }
+
+        // 更新currentMaxLevel
+        while (currentMaxLevel > 1 && head.next[currentMaxLevel] == null){
+            currentMaxLevel--;
+        }
+        length--;
+    }
+
+    public void delete(double score, String value) {
+        SkipNode node = head;
+        /**
+         * 找到当前结点的全部下一个节点
+         */
+        SkipNode[] update = findNodeNext(node, currentMaxLevel, score);
+        node = update[0];
+        if (node.next[0] != null && node.next[0].score == score) {
+            for (int i = currentMaxLevel - 1; i >= 0; i--) {
+                if (update[i].next[i] != null && update[i].next[i].score == score && StringUtils.equals(update[i].next[i].value, value)) {
                     update[i].next[i] = update[i].next[i].next[i];
                 }
             }
@@ -168,12 +206,32 @@ public class SkipList {
         return level;
     }
 
-    public List<String> toList() {
+    public List<String> values() {
         SkipNode node = head;
         List<String> result = new ArrayList<>(length);
         while (node.next[0] != null) {
             node = node.next[0];
             result.add(node.value);
+        }
+        return result;
+    }
+
+    public List<Double> scores() {
+        SkipNode node = head;
+        List<Double> result = new ArrayList<>(length);
+        while (node.next[0] != null) {
+            node = node.next[0];
+            result.add(node.score);
+        }
+        return result;
+    }
+
+    public List<KV<Double, String>> scoreValues() {
+        SkipNode node = head;
+        List<KV<Double, String>> result = new ArrayList<>(length);
+        while (node.next[0] != null) {
+            node = node.next[0];
+            result.add(new KV<>(node.score, node.value));
         }
         return result;
     }

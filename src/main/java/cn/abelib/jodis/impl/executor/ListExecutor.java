@@ -38,9 +38,6 @@ public class ListExecutor implements Executor {
                 res = listOperation.leftIndex(arguments.get(0), num);
                 return SimpleResponse.simpleResponse(res);
 
-            /**
-             * todo
-             */
             case ProtocolConstant.LIST_LINSERT:
                 if (argNum != 4) {
                     return ErrorResponse.errorArgsNum(command, 2, argNum);
@@ -49,11 +46,69 @@ public class ListExecutor implements Executor {
                 if (StringUtils.equals(res, "BEFORE")) {
                     num = listOperation.leftInsert(arguments.get(0), arguments.get(1), arguments.get(3));
                 } else if (StringUtils.equals(res, "AFTER")) {
-                    num = listOperation.leftInsert(arguments.get(0), arguments.get(1), arguments.get(3));
+                    num = listOperation.rightInsert(arguments.get(0), arguments.get(1), arguments.get(3));
                 } else {
                     return ErrorResponse.errorSyntax();
                 }
                 return NumericResponse.numericResponse(num);
+
+            case ProtocolConstant.LIST_LPOP:
+                if (argNum != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                }
+                res = listOperation.leftPop(arguments.get(0));
+                return SimpleResponse.simpleResponse(res);
+
+            case ProtocolConstant.LIST_RPOP:
+                if (argNum != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                }
+                res = listOperation.rightPop(arguments.get(0));
+                return SimpleResponse.simpleResponse(res);
+
+            case ProtocolConstant.LIST_LPUSH:
+                if (argNum < 1) {
+                    return ErrorResponse.errorArgsNum(command);
+                }
+                res = arguments.get(0);
+                arguments.remove(0);
+                num = listOperation.leftPush(res, arguments);
+                return NumericResponse.numericResponse(num);
+
+            case ProtocolConstant.LIST_RPUSH:
+                if (argNum < 1) {
+                    return ErrorResponse.errorArgsNum(command);
+                }
+                res = arguments.get(0);
+                arguments.remove(0);
+                num = listOperation.rightPush(res, arguments);
+                return NumericResponse.numericResponse(num);
+
+            case ProtocolConstant.LIST_LRANGE:
+                if (argNum != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                }
+                start = Utils.toInt(arguments.get(1));
+                end = Utils.toInt(arguments.get(2));
+                list = listOperation.listRange(arguments.get(0), start, end);
+                return ListResponse.stringListResponse(list);
+
+            case ProtocolConstant.LIST_LREM:
+                if (argNum != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                }
+                num = Utils.toInt(arguments.get(1));
+                num = listOperation.listRemove(arguments.get(0), num, arguments.get(2));
+                return NumericResponse.numericResponse(num);
+
+            case ProtocolConstant.LIST_LTRIM:
+                if (argNum != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                }
+                start = Utils.toInt(arguments.get(1));
+                end = Utils.toInt(arguments.get(2));
+                listOperation.leftTrim(arguments.get(0), start, end);
+                return SimpleResponse.ok();
 
             default:
         }

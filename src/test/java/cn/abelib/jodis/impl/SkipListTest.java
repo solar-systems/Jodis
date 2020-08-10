@@ -1,6 +1,5 @@
-package cn.abelib.jodis.internal;
+package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.impl.SkipList;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +24,7 @@ public class SkipListTest {
         skipList.add(4, "List");
         Assert.assertSame(skipList.size(),4);
 
-        System.err.println(skipList.toList());
+        System.err.println(skipList.values());
     }
 
     @Test

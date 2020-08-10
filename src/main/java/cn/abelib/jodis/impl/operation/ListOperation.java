@@ -41,10 +41,14 @@ public class ListOperation extends KeyOperation{
      * @return
      */
     public String leftIndex(String key, int index) {
-        if (!exists(key) || index >= listLength(key) || index < 0) {
+        List<String> value = getList(key);
+        if (Objects.isNull(value)) {
             return StringUtils.NIL;
         }
-        List<String> value = getList(key);
+        if (index >= value.size() || index < 0) {
+            return StringUtils.NIL;
+        }
+
         return value.get(index);
     }
 
@@ -73,7 +77,9 @@ public class ListOperation extends KeyOperation{
             value = Lists.newLinkedList();
             this.jodisDb.put(key, JodisObject.putJodisList(value));
         }
-        value.addAll(0, values);
+        for (String v : values) {
+            value.add(0, v);
+        }
         return value.size();
     }
 
@@ -142,11 +148,14 @@ public class ListOperation extends KeyOperation{
     public String rightPop(String key) {
         List<String> values = getList(key);
         if (Objects.isNull(values)) {
-            return null;
+            return StringUtils.NIL;
         }
         int idx = values.size() - 1;
         String value = values.get(idx);
         values.remove(idx);
+        if (values.isEmpty()) {
+            delete(key);
+        }
         return value;
     }
 
@@ -158,15 +167,17 @@ public class ListOperation extends KeyOperation{
     public String leftPop(String key) {
         List<String> values = getList(key);
         if (Objects.isNull(values)) {
-            return null;
+            return StringUtils.NIL;
         }
         String value = values.get(0);
         values.remove(0);
+        if (values.isEmpty()) {
+            delete(key);
+        }
         return value;
     }
 
     /**
-     *  todo test
      * Redis command: LINSERT BEFORE
      * @param key
      * @param exists
@@ -174,24 +185,10 @@ public class ListOperation extends KeyOperation{
      * @return
      */
     public int leftInsert(String key, String exists, String value) {
-        List<String> values = getList(key);
-        if (Objects.isNull(values)) {
-            return 0;
-        }
-        int len = values.size();
-        int index = CollectionUtils.listIndex(values, exists);
-        if (index < 0) {
-            return -1;
-        } else if (index == len) {
-            values.add(value);
-        } else {
-            values.add(index, value);
-        }
-        return values.size();
+        return insert(key, exists, value, 0);
     }
 
     /**
-     *  todo test
      * Redis command: LINSERT AFTER
      * @param key
      * @param exists
@@ -199,6 +196,10 @@ public class ListOperation extends KeyOperation{
      * @return
      */
     public int rightInsert(String key, String exists, String value) {
+        return insert(key, exists, value, 1);
+    }
+
+    private int insert(String key, String exists, String value, int idx) {
         List<String> values = getList(key);
         if (Objects.isNull(values)) {
             return 0;
@@ -210,12 +211,13 @@ public class ListOperation extends KeyOperation{
         } else if (index == len) {
             values.add(value);
         } else {
-            values.add(index + 1, value);
+            values.add(index + idx, value);
         }
         return values.size();
     }
 
     /**
+     *  todo
      * Redis command: LTRIM
      * @param key
      * @param start
@@ -250,6 +252,7 @@ public class ListOperation extends KeyOperation{
     }
 
     /**
+     * todo
      * Redis command: LREM
      * @param key
      * @param count
@@ -263,7 +266,11 @@ public class ListOperation extends KeyOperation{
         }
         int len = values.size();
         if (len == 1) {
-
+            if (StringUtils.equals(values.get(0), value)) {
+                delete(key);
+                return 1;
+            }
+            return 0;
         }
         int cnt = count;
         Iterator<String> iterator = values.iterator();
@@ -297,6 +304,9 @@ public class ListOperation extends KeyOperation{
                 }
             }
         }
+        if (values.isEmpty()) {
+            delete(key);
+        }
         return Math.abs(cnt - count);
     }
 
@@ -314,8 +324,8 @@ public class ListOperation extends KeyOperation{
         }
         int len = value.size();
         if (start < 0 || end >= len || start > end) {
-            return null;
+            return Lists.newArrayList();
         }
-        return value.subList(start, end);
+        return value.subList(start, end + 1);
     }
 }

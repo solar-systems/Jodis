@@ -16,6 +16,9 @@ public class StringUtils {
     public static String NIL = "nil";
 
     public static boolean isEmpty(String str) {
+        if (Objects.isNull(str)) {
+            return true;
+        }
         return EMPTY.equals(str);
     }
 

@@ -18,11 +18,19 @@ public class NumericResponse implements Response{
         this.number = String.valueOf(number);
     }
 
+    public NumericResponse(double number){
+        this.number = String.valueOf(number);
+    }
+
     public static NumericResponse numericResponse(int number) {
         return new NumericResponse(number);
     }
 
     public static NumericResponse numericResponse(float number) {
+        return new NumericResponse(number);
+    }
+
+    public static NumericResponse numericResponse(double number) {
         return new NumericResponse(number);
     }
 
