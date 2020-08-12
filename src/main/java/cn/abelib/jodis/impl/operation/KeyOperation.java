@@ -39,7 +39,7 @@ public class KeyOperation extends AbstractOperation {
     }
 
     /**
-     * todo 如果集合为空直接删除
+     * 如果集合为空直接删除
      * Redis command: DEL
      * @param key
      * @return

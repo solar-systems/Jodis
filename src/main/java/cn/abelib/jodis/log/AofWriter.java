@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 /**
  * @Author: abel.huang
@@ -28,7 +29,7 @@ public class AofWriter {
      * @return
      */
     public boolean write(String reqCmd) throws IOException {
-        Files.write(aofFile, reqCmd.getBytes(StandardCharsets.UTF_8));
+        Files.write(aofFile, reqCmd.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
         return true;
     }
 

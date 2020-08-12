@@ -13,12 +13,12 @@ public class IoUtilsTest {
 
     @Test
     public void addTest() throws IOException {
-        IoUtils.createFileIfNotExists("log", "default.aof");
+        IoUtils.createFileIfNotExists("log", "default.wal");
     }
 
     @Test
     public void readLinesTest() throws IOException {
-        Iterator<String> iterator = IoUtils.readLines("log/default.aof").iterator();
+        Iterator<String> iterator = IoUtils.readLines("log/default.wal").iterator();
         while (iterator.hasNext()) {
             System.err.println(iterator.next());
         }

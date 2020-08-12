@@ -18,12 +18,10 @@ public class SocketServer implements Closeable {
     private RequestHandler requestHandler;
     private Processor processor;
     private Accepter accepter;
-    private JodisConfig jodisConfig;
 
     public SocketServer(JodisHandler jodisHandler, JodisConfig jodisConfig) {
-        this.jodisConfig = jodisConfig;
         this.requestHandler = jodisHandler;
-        this.processor = new Processor(requestHandler);
+        this.processor = new Processor(jodisConfig, requestHandler);
         this.accepter = new Accepter(jodisConfig.getPort(), processor);
     }
 

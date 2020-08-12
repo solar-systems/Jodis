@@ -120,6 +120,12 @@ public class SortedSetOperation extends KeyOperation {
         return count;
     }
 
+    /**
+     * Redis command: ZREM
+     * @param key
+     * @param member
+     * @return
+     */
     public int zRemove(String key, String member) {
         SkipList skipList = getSkipList(key);
         Map<String, Double> map = getHolder(key);
@@ -132,6 +138,9 @@ public class SortedSetOperation extends KeyOperation {
         }
         map.remove(member);
         skipList.delete(score, member);
+        if (map.isEmpty()) {
+            delete(key);
+        }
         return 1;
     }
 }

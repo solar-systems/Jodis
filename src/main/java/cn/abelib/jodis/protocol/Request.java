@@ -17,7 +17,6 @@ public class Request {
     private List<String> args;
     private Response response;
     private boolean error = false;
-    private String cmdType;
 
     public Request() {}
 
@@ -64,5 +63,9 @@ public class Request {
         request.error = true;
         request.response = errResp;
         return request;
+    }
+
+    public void setRequest(String request) {
+        this.request = request;
     }
 }

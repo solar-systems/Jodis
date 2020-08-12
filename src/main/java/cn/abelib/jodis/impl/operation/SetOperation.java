@@ -133,7 +133,11 @@ public class SetOperation extends KeyOperation {
         if (Objects.isNull(set)) {
             return false;
         }
-        return set.remove(member);
+        boolean result = set.remove(member);
+        if (set.isEmpty()) {
+            delete(key);
+        }
+        return result;
     }
 
     /**
@@ -211,6 +215,9 @@ public class SetOperation extends KeyOperation {
         }
         String member = set.iterator().next();
         set.remove(member);
+        if (set.isEmpty()) {
+            delete(key);
+        }
         return member;
     }
 }

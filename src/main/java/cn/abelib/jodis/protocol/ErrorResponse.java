@@ -1,5 +1,7 @@
 package cn.abelib.jodis.protocol;
 
+import cn.abelib.jodis.utils.StringUtils;
+
 /**
  * @author abel.huang
  * @date 2020/6/30 18:53
@@ -18,7 +20,7 @@ public class ErrorResponse implements Response {
      */
     @Override
     public String toRespString() {
-        return ProtocolConstant.ERROR_PREFIX + this.content;
+        return ProtocolConstant.ERROR_PREFIX + this.content + StringUtils.CLRF;
     }
 
     @Override
@@ -49,6 +51,11 @@ public class ErrorResponse implements Response {
         return new ErrorResponse(content);
     }
 
+    public static ErrorResponse errorInvalidNumber() {
+        String content = "invalid number";
+        return new ErrorResponse(content);
+    }
+
     /**
      * 未知命令
      * @param command
@@ -56,7 +63,7 @@ public class ErrorResponse implements Response {
      */
     public static ErrorResponse errorUnknownCmd(String command) {
         String content = "unknown command '{}'";
-        return new ErrorResponse(String.format(content, command));
+        return new ErrorResponse(StringUtils.format(content, command));
     }
 
     /**
@@ -68,7 +75,7 @@ public class ErrorResponse implements Response {
      */
     public static ErrorResponse errorArgsNum(String command, int expect, int actual) {
         String content = "wrong number of arguments for '{}' command, require {}, but found {}";
-        return new ErrorResponse(String.format(content, command, expect, actual));
+        return new ErrorResponse(StringUtils.format(content, command, expect, actual));
     }
 
     /**
@@ -78,6 +85,6 @@ public class ErrorResponse implements Response {
      */
     public static ErrorResponse errorArgsNum(String command) {
         String content = "wrong number of arguments for '{}' command";
-        return new ErrorResponse(String.format(content, command));
+        return new ErrorResponse(StringUtils.format(content, command));
     }
 }

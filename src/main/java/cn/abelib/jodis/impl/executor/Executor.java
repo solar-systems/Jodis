@@ -8,7 +8,6 @@ import java.util.List;
 /**
  * @Author: abel.huang
  * @Date: 2020-07-16 01:31
- *  todo All Unit test case
  */
 public interface Executor {
 

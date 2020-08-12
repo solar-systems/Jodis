@@ -1,6 +1,7 @@
 package cn.abelib.jodis.network;
 
 import cn.abelib.jodis.protocol.JodisReceive;
+import cn.abelib.jodis.server.JodisConfig;
 import cn.abelib.jodis.utils.Closeables;
 import cn.abelib.jodis.utils.Logger;
 import com.google.common.base.Throwables;
@@ -28,13 +29,13 @@ public class Processor extends AbstractServerThread {
     private int maxRequestSize;
 
     /**
-     * todo maxRequestSize setting in Config File
+     * @param jodisConfig
      * @param requestHandler
      */
-    public Processor(RequestHandler requestHandler) {
-        this.newConnections = new ArrayBlockingQueue<>(64);
+    public Processor(JodisConfig jodisConfig, RequestHandler requestHandler) {
+        this.newConnections = new ArrayBlockingQueue<>(jodisConfig.getMaxConcurrency());
         this.requestHandler = requestHandler;
-        this.maxRequestSize = 1024;
+        this.maxRequestSize = jodisConfig.getMaxRequestSize();
     }
 
     public void accept(SocketChannel socketChannel) {

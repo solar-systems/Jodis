@@ -50,6 +50,8 @@ public class JodisDb {
 
     private JdbWriter jdbWriter;
 
+    private boolean noNeed;
+
     /**
      * 是否正在进行Aof文件重写
      */
@@ -64,11 +66,11 @@ public class JodisDb {
         rewriteAof = new AtomicBoolean(false);
 
         respParser = new RespParser();
+        noNeed = false;
     }
 
     /**
      * default for test
-     * todo
      * @throws IOException
      */
     public JodisDb() throws IOException {
@@ -76,6 +78,7 @@ public class JodisDb {
         executorFactory = new ExecutorFactory(this);
         requestQueue = new ArrayList<>(10);
         rewriteAof = new AtomicBoolean(false);
+        noNeed = true;
     }
 
     public JodisObject put(String key, JodisObject value) {
@@ -123,14 +126,13 @@ public class JodisDb {
     public Response execute(Request request) throws IOException {
         Response response = executorFactory.execute(request);
         // 检测是否需要进行AOF
-        if (request.needLog() || !response.isError()) {
+        if (!noNeed && request.needLog() && !response.isError()) {
             // 如果正在进行Aof重写
             if (rewriteAof.get()) {
                 requestQueue.add(request);
             } else {
                 aofWriter.write(request.getRequest());
             }
-
         }
         return response;
     }
@@ -186,7 +188,7 @@ public class JodisDb {
                 default:
                     cmd = null;
             }
-            if (Objects.nonNull(cmd) && StringUtils.isNotEmpty(cmd.toString())) {
+            if (Objects.nonNull(cmd) && StringUtils.isNotEmpty(cmd.toString()) && !cmd.isError()) {
                 this.aofWriter.rewrite(cmd.toString());
             }
         }

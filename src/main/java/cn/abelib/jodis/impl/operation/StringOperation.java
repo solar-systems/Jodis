@@ -46,7 +46,7 @@ public class StringOperation extends KeyOperation {
      */
     public String get(String key) {
         if (!exists(key)) {
-            return null;
+            return StringUtils.NIL;
         }
         return getJodisString(key).getHolder();
     }

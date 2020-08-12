@@ -31,7 +31,12 @@ public class ListResponse implements Response{
     public String toRespString() {
         StringBuilder resp = new StringBuilder(ProtocolConstant.LIST_PREFIX);
         resp.append(list.size());
-        list.forEach(ans -> resp.append(StringUtils.CLRF).append(ans));
+        list.forEach(ans -> resp
+                .append(StringUtils.CLRF)
+                .append(ProtocolConstant.MULTI_STRING_PREFIX)
+                .append(ans.length())
+                .append(StringUtils.CLRF)
+                .append(ans));
 
         resp.append(StringUtils.CLRF);
         return resp.toString();

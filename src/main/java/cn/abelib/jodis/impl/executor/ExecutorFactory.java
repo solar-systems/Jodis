@@ -28,7 +28,6 @@ public class ExecutorFactory {
     }
 
     /**
-     * todo 需要先判断一下类型是否匹配对应的命令
      * @param request
      * @return
      */

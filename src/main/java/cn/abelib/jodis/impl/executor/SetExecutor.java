@@ -1,8 +1,10 @@
 package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
+import cn.abelib.jodis.impl.KeyType;
 import cn.abelib.jodis.impl.operation.SetOperation;
 import cn.abelib.jodis.protocol.*;
+import cn.abelib.jodis.utils.StringUtils;
 
 import java.util.List;
 
@@ -22,7 +24,19 @@ public class SetExecutor implements Executor {
     public Response execute(Request request) {
         String command = request.getCommand();
         List<String> arguments = request.getArgs();
-        int argNum = arguments.size();
+        int argSize = arguments.size();
+        if (argSize < 1) {
+            return ErrorResponse.errorArgsNum(command);
+        }
+        String key = arguments.get(0);
+        if (StringUtils.isEmpty(key)) {
+            return ErrorResponse.errorArgsNum(command);
+        }
+        String type = setOperation.type(key);
+        // 类型不匹配
+        if (!StringUtils.isEmpty(type) && !StringUtils.equals(type, KeyType.JODIS_SET)) {
+            return ErrorResponse.errorSyntax();
+        }
         int num;
         boolean flag;
         String res;
@@ -30,79 +44,79 @@ public class SetExecutor implements Executor {
         switch (command) {
             case ProtocolConstant.SET_SADD:
                 if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = setOperation.setAdd(arguments.get(0), arguments.get(1));
+                num = setOperation.setAdd(key, arguments.get(1));
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.SET_SCARD:
                 if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                num = setOperation.setCard(arguments.get(0));
+                num = setOperation.setCard(key);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.SET_SDIFF:
                 if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                list = setOperation.setDiff(arguments.get(0), arguments.get(1));
+                list = setOperation.setDiff(key, arguments.get(1));
                 return ListResponse.stringListResponse(list);
 
             case ProtocolConstant.SET_SINTER:
                 if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                list = setOperation.setInter(arguments.get(0), arguments.get(1));
+                list = setOperation.setInter(key, arguments.get(1));
                 return ListResponse.stringListResponse(list);
 
             case ProtocolConstant.SET_SUNION:
                 if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                list = setOperation.setUnion(arguments.get(0), arguments.get(1));
+                list = setOperation.setUnion(key, arguments.get(1));
                 return ListResponse.stringListResponse(list);
 
             case ProtocolConstant.SET_SISMEMBER:
                 if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                flag = setOperation.setIsMember(arguments.get(0), arguments.get(1));
+                flag = setOperation.setIsMember(key, arguments.get(1));
                 return NumericResponse.numericResponse(flag ? 1 : 0);
 
             case ProtocolConstant.SET_SMEMBERS:
                 if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                list = setOperation.setMembers(arguments.get(0));
+                list = setOperation.setMembers(key);
                 return ListResponse.stringListResponse(list);
 
             case ProtocolConstant.SET_SMOVE:
                 if (arguments.size() != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                flag = setOperation.setMove(arguments.get(0), arguments.get(1), arguments.get(2));
+                flag = setOperation.setMove(key, arguments.get(1), arguments.get(2));
                 return NumericResponse.numericResponse(flag ? 1 : 0);
 
             case ProtocolConstant.SET_SPOP:
                 if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                res = setOperation.setPop(arguments.get(0));
+                res = setOperation.setPop(key);
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.SET_SRANDMEMBER:
                 if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                res = setOperation.setRandMember(arguments.get(0));
+                res = setOperation.setRandMember(key);
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.SET_SREM:
                 if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                flag = setOperation.setRemove(arguments.get(0), arguments.get(1));
+                flag = setOperation.setRemove(key, arguments.get(1));
                 return NumericResponse.numericResponse(flag ? 1 : 0);
 
             /**

@@ -3,7 +3,7 @@ package cn.abelib.jodis.impl.executor;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.operation.KeyOperation;
 import cn.abelib.jodis.protocol.*;
-import cn.abelib.jodis.utils.Utils;
+import cn.abelib.jodis.utils.NumberUtils;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -83,7 +83,7 @@ public class KeyExecutor implements Executor {
                 if (arguments.size() != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argNum);
                 }
-                timestamp = Utils.toTimestamp(arguments.get(1));
+                timestamp = NumberUtils.toTimestamp(arguments.get(1));
                 if (timestamp < 0)  {
                     ans = 0;
                 } else {
@@ -95,7 +95,7 @@ public class KeyExecutor implements Executor {
                 if (arguments.size() != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argNum);
                 }
-                timestamp = Utils.toTimestamp(arguments.get(1));
+                timestamp = NumberUtils.toTimestamp(arguments.get(1));
                 if (timestamp < 0)  {
                     ans = 0;
                 } else {
@@ -107,7 +107,7 @@ public class KeyExecutor implements Executor {
                 if (arguments.size() != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argNum);
                 }
-                timestamp = Utils.toTimestamp(arguments.get(1));
+                timestamp = NumberUtils.toTimestamp(arguments.get(1));
                 if (timestamp < 0)  {
                     ans = 0;
                 } else {

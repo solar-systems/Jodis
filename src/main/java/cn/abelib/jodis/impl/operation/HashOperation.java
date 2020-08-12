@@ -184,7 +184,11 @@ public class HashOperation extends KeyOperation {
         if (Objects.isNull(map)) {
             return 0;
         }
-        return Objects.isNull(map.remove(filed)) ? 0 : 1 ;
+        int deletion = Objects.isNull(map.remove(filed)) ? 0 : 1 ;
+        if (map.isEmpty()) {
+            delete(key);
+        }
+        return deletion;
     }
 
     /**

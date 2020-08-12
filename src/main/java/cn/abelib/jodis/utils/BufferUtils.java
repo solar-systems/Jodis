@@ -17,7 +17,13 @@ public class BufferUtils {
      * @return
      */
     public static String toUTF8String(ByteBuffer buffer) {
+        buffer.flip();
         CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer);
-        return charBuffer.toString();
+        String result = charBuffer.toString();
+        int len = result.length();
+        if (len >= 1 && result.endsWith(result)) {
+            result = result.substring(0, len - 1);
+        }
+        return result;
     }
 }

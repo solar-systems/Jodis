@@ -10,48 +10,58 @@ import java.util.Set;
 /**
  * @Author: abel.huang
  * @Date: 2020-08-07 01:06
- * todo parser
  */
 public class RespParser {
 
     public Request parse(String request) {
         Request req;
+        String[] arguments;
+        boolean parsed = false;
+        // maybe inline command
         if (!request.startsWith(ProtocolConstant.LIST_PREFIX)) {
-            Response errResp = ErrorResponse.errorCommon();
-            return Request.badRequest(errResp);
+            arguments = request.split(StringUtils.SPACE);
+        } else {
+            int sizeEnd = request.indexOf(StringUtils.CLRF);
+            int requestLength = request.length();
+            String sizeString = request.substring(1, sizeEnd);
+            int size = Integer.parseInt(sizeString);
+            String cmdString = request.substring(sizeEnd, requestLength);
+            arguments = cmdString.split(StringUtils.CLRF);
+            if (arguments.length != size) {
+                Response errResp = ErrorResponse.errorSyntax();
+                return Request.badRequest(errResp);
+            }
+            parsed = true;
         }
-
-        int sizeEnd = request.indexOf(StringUtils.CLRF);
-        int requestLength = request.length();
-        String sizeString = request.substring(1, sizeEnd);
-        int size = Integer.parseInt(sizeString);
-        String cmdString = request.substring(sizeEnd, requestLength);
-        String[] cmdAndArgs = cmdString.split(StringUtils.CLRF);
-        if (cmdAndArgs.length != size) {
+        int len = arguments.length;
+        if (len < 1) {
             Response errResp = ErrorResponse.errorSyntax();
             return Request.badRequest(errResp);
         }
-        String cmd = cmdAndArgs[0].toUpperCase();
-        List<String>  args = Lists.newArrayList(cmdAndArgs);
+        String command = arguments[0].toUpperCase();
+        List<String> args = Lists.newArrayList(arguments);
         args.remove(0);
-
-        req = new Request(cmd, args);
+        req = new Request(command, args);
+        if (!parsed) {
+            request = parseRequest(arguments);
+        }
+        req.setRequest(request);
         return req;
     }
 
     /**
      * eg *3\r\n$3\r\nset\r\n$4\r\nname\r\n$3\r\nbob\r\n
     */
-    public String parseRequest(Request req) {
-        List<String> args = req.getArgs();
-        String cmd = req.getCommand();
-        args.add(0, cmd);
-        int len = args.size();
+    public String parseRequest(String[] arguments) {
+        int len = arguments.length;
         StringBuilder request = new StringBuilder(ProtocolConstant.LIST_PREFIX);
         request.append(len).append(StringUtils.CLRF);
-        for (String arg : args) {
-            request.append(arg);
-            request.append(StringUtils.CLRF);
+        for (String arg : arguments) {
+            request.append(ProtocolConstant.MULTI_STRING_PREFIX)
+                    .append(arg.length())
+                    .append(StringUtils.CLRF)
+                    .append(arg)
+                    .append(StringUtils.CLRF);
         }
         return request.toString();
     }

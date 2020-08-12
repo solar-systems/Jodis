@@ -1,12 +1,14 @@
 package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
+import cn.abelib.jodis.impl.KeyType;
 import cn.abelib.jodis.impl.operation.ListOperation;
 import cn.abelib.jodis.protocol.*;
 import cn.abelib.jodis.utils.StringUtils;
-import cn.abelib.jodis.utils.Utils;
+import cn.abelib.jodis.utils.NumberUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author: abel.huang
@@ -23,91 +25,119 @@ public class ListExecutor implements Executor {
     public Response execute(Request request) {
         String command = request.getCommand();
         List<String> arguments = request.getArgs();
-        int argNum = arguments.size();
-        int num;
-        int start;
-        int end;
+        int argSize = arguments.size();
+        if (argSize < 1) {
+            return ErrorResponse.errorArgsNum(command);
+        }
+        String key = arguments.get(0);
+        if (StringUtils.isEmpty(key)) {
+            return ErrorResponse.errorArgsNum(command);
+        }
+        String type = listOperation.type(key);
+        // 类型不匹配
+        if (!StringUtils.isEmpty(type) && !StringUtils.equals(type, KeyType.JODIS_LIST)) {
+            return ErrorResponse.errorSyntax();
+        }
+        Integer num;
+        Integer start;
+        Integer end;
         String res;
         List<String> list;
         switch (command) {
             case ProtocolConstant.LIST_LINDEX:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = Utils.toInt(arguments.get(1));
-                res = listOperation.leftIndex(arguments.get(0), num);
+                num = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(num)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                res = listOperation.leftIndex(key, num);
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.LIST_LINSERT:
-                if (argNum != 4) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 4) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
                 res = arguments.get(2);
-                if (StringUtils.equals(res, "BEFORE")) {
-                    num = listOperation.leftInsert(arguments.get(0), arguments.get(1), arguments.get(3));
-                } else if (StringUtils.equals(res, "AFTER")) {
-                    num = listOperation.rightInsert(arguments.get(0), arguments.get(1), arguments.get(3));
+                if (StringUtils.equalsIgnoreCase(res, ProtocolConstant.LIST_BEFORE)) {
+                    num = listOperation.leftInsert(key, arguments.get(1), arguments.get(3));
+                } else if (StringUtils.equalsIgnoreCase(res, ProtocolConstant.LIST_AFTER)) {
+                    num = listOperation.rightInsert(key, arguments.get(1), arguments.get(3));
                 } else {
                     return ErrorResponse.errorSyntax();
                 }
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.LIST_LPOP:
-                if (argNum != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                if (argSize != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                res = listOperation.leftPop(arguments.get(0));
+                res = listOperation.leftPop(key);
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.LIST_RPOP:
-                if (argNum != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                if (argSize != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                res = listOperation.rightPop(arguments.get(0));
+                res = listOperation.rightPop(key);
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.LIST_LPUSH:
-                if (argNum < 1) {
+                if (argSize < 2) {
                     return ErrorResponse.errorArgsNum(command);
                 }
-                res = arguments.get(0);
                 arguments.remove(0);
-                num = listOperation.leftPush(res, arguments);
+                num = listOperation.leftPush(key, arguments);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.LIST_RPUSH:
-                if (argNum < 1) {
+                if (argSize < 2) {
                     return ErrorResponse.errorArgsNum(command);
                 }
-                res = arguments.get(0);
                 arguments.remove(0);
-                num = listOperation.rightPush(res, arguments);
+                num = listOperation.rightPush(key, arguments);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.LIST_LRANGE:
-                if (argNum != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                if (argSize != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                start = Utils.toInt(arguments.get(1));
-                end = Utils.toInt(arguments.get(2));
-                list = listOperation.listRange(arguments.get(0), start, end);
+                start = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(start)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                end = NumberUtils.toInt(arguments.get(2));
+                if (Objects.isNull(end)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                list = listOperation.listRange(key, start, end);
                 return ListResponse.stringListResponse(list);
 
             case ProtocolConstant.LIST_LREM:
-                if (argNum != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                if (argSize != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                num = Utils.toInt(arguments.get(1));
-                num = listOperation.listRemove(arguments.get(0), num, arguments.get(2));
+                num = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(num)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                num = listOperation.listRemove(key, num, arguments.get(2));
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.LIST_LTRIM:
-                if (argNum != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                if (argSize != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                start = Utils.toInt(arguments.get(1));
-                end = Utils.toInt(arguments.get(2));
-                listOperation.leftTrim(arguments.get(0), start, end);
+                start = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(start)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                end = NumberUtils.toInt(arguments.get(2));
+                if (Objects.isNull(end)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                listOperation.leftTrim(key, start, end);
                 return SimpleResponse.ok();
 
             default:

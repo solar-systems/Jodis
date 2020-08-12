@@ -9,6 +9,8 @@ import java.util.Objects;
 public class StringUtils {
     private StringUtils(){}
 
+    public static final String SPACE = " ";
+
     public static String EMPTY = "";
 
     public static String CLRF = "\r\n";
@@ -27,7 +29,6 @@ public class StringUtils {
     }
 
     /**
-     * todo IgnoreCase?
      * @param str1
      * @param str2
      * @return
@@ -37,6 +38,13 @@ public class StringUtils {
             return false;
         }
         return str1.equals(str2);
+    }
+
+    public static boolean equalsIgnoreCase(String str1, String str2) {
+        if (Objects.isNull(str1) || Objects.isNull(str2)) {
+            return false;
+        }
+        return str1.toUpperCase().equals(str2.toUpperCase());
     }
 
     /**
@@ -60,5 +68,9 @@ public class StringUtils {
         } else {
             return str;
         }
+    }
+
+    public static String format(String pattern, Object... args) {
+        return String.format(pattern.replaceAll("\\{\\}", "%s"), args);
     }
 }

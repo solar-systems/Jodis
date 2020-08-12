@@ -12,6 +12,10 @@ import java.util.Properties;
 public class JodisConfig {
     private final Properties props;
 
+    /**
+     * todo 日志加载配置 重写日志配置，线程池配置，网络连接配置
+     * @param props
+     */
     public JodisConfig(Properties props) {
         this.props = props;
     }
@@ -23,15 +27,15 @@ public class JodisConfig {
     public int getPort() {
         int port = PropertiesUtils.getInteger(props, "jodis.port", 6059);
         if (port < 1025 || port > 65535) {
-            throw new ConfigrationException(String.format("Invalid port {}, port must in [1025, 65535]", port));
+            throw new ConfigrationException(StringUtils.format("Invalid port {}, port must in [1025, 65535]", port));
         }
-        return PropertiesUtils.getInteger(props, "jodis.port", 6059);
+        return port;
     }
 
     public String getLogDir() {
         String logDir = PropertiesUtils.getString(props, "log.dir", "log/");
         if (StringUtils.isEmpty(logDir)) {
-            throw new ConfigrationException(String.format("Invalid log directory {}, log directory must not be empty", logDir));
+            throw new ConfigrationException(StringUtils.format("Invalid log directory {}, log directory must not be empty", logDir));
         }
         return logDir;
     }
@@ -39,7 +43,7 @@ public class JodisConfig {
     public String getLogJdb() {
         String logJdb = PropertiesUtils.getString(props, "log.jdb", "default.jdb");
         if (StringUtils.isEmpty(logJdb)) {
-            throw new ConfigrationException(String.format("Invalid jdb log {}, jdb log file name must not be empty", logJdb));
+            throw new ConfigrationException(StringUtils.format("Invalid jdb log {}, jdb log file name must not be empty", logJdb));
         }
         return logJdb;
     }
@@ -47,8 +51,25 @@ public class JodisConfig {
     public String getLogWal() {
         String logWal =  PropertiesUtils.getString(props, "log.wal", "default.wal");
         if (StringUtils.isEmpty(logWal)) {
-            throw new ConfigrationException(String.format("Invalid wal log {}, wal log file name must not be empty", logWal));
+            throw new ConfigrationException(StringUtils.format("Invalid wal log {}, wal log file name must not be empty", logWal));
         }
         return logWal;
     }
+
+    public int getMaxRequestSize() {
+        int maxRequestSize = PropertiesUtils.getInteger(props, "server.max.request", 1024);
+        if (maxRequestSize < 1024 || maxRequestSize > 1024 * 8) {
+            throw new ConfigrationException(StringUtils.format("Invalid maxRequestSize {}, maxRequestSize must in [1024, 8192]", maxRequestSize));
+        }
+        return maxRequestSize;
+    }
+
+    public int getMaxConcurrency() {
+        int concurrency = PropertiesUtils.getInteger(props, "server.max.concurrency", 64);
+        if (concurrency < 8 || concurrency > 1024) {
+            throw new ConfigrationException(StringUtils.format("Invalid concurrency {}, concurrency must in [8, 1024]", concurrency));
+        }
+        return concurrency;
+    }
+
 }

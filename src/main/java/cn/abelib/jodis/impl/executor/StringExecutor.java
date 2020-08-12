@@ -1,11 +1,14 @@
 package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
+import cn.abelib.jodis.impl.KeyType;
 import cn.abelib.jodis.impl.operation.StringOperation;
 import cn.abelib.jodis.protocol.*;
-import cn.abelib.jodis.utils.Utils;
+import cn.abelib.jodis.utils.StringUtils;
+import cn.abelib.jodis.utils.NumberUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author: abel.huang
@@ -28,143 +31,160 @@ public class StringExecutor implements Executor {
     public Response execute(Request request) {
         String command = request.getCommand();
         List<String> arguments = request.getArgs();
-        int argNum = arguments.size();
-        int num;
-        float numFloat;
-        int start;
-        int end;
+        int argSize = arguments.size();
+        if (argSize < 1) {
+            return ErrorResponse.errorArgsNum(command);
+        }
+        String key = arguments.get(0);
+        if (StringUtils.isEmpty(key)) {
+            return ErrorResponse.errorArgsNum(command);
+        }
+        String type = stringOperation.type(key);
+        // 类型不匹配
+        if (!StringUtils.isEmpty(type) && !StringUtils.equals(type, KeyType.JODIS_STRING)) {
+            return ErrorResponse.errorSyntax();
+        }
+        Integer num;
+        Float numFloat;
+        Integer start;
+        Integer end;
         int timeout;
         String res;
         List<String> list;
         switch (command) {
             case ProtocolConstant.STRING_SET:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                stringOperation.set(arguments.get(0), arguments.get(1));
+                stringOperation.set(key, arguments.get(1));
                 return SimpleResponse.ok();
 
              case ProtocolConstant.STRING_GET:
-                 if (argNum != 1) {
-                     return ErrorResponse.errorArgsNum(command, 1, argNum);
+                 if (argSize != 1) {
+                     return ErrorResponse.errorArgsNum(command, 1, argSize);
                  }
-                 res = stringOperation.get(arguments.get(0));
+                 res = stringOperation.get(key);
                  return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.STRING_GETSET:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                res = stringOperation.getAndSet(arguments.get(0), arguments.get(1));
+                res = stringOperation.getAndSet(key, arguments.get(1));
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.STRING_GETRANGE:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                start = Utils.toInt(arguments.get(0));
-                end = Utils.toInt(arguments.get(1));
+                start = NumberUtils.toInt(key);
+                if (Objects.isNull(start)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                end = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(end)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
                 res = stringOperation.getRange(command, start, end);
                 return SimpleResponse.simpleResponse(res);
 
             case ProtocolConstant.STRING_MGET:
-                if (argNum < 1) {
-                    return ErrorResponse.errorArgsNum(command);
-                }
-
                 list = stringOperation.multiGet(arguments);
                 return ListResponse.stringListResponse(list);
 
             case ProtocolConstant.STRING_MSET:
-                if (argNum % 2 != 0) {
-                    return ErrorResponse.errorArgsNum(command, argNum + 1, argNum);
+                if (argSize % 2 != 0) {
+                    return ErrorResponse.errorArgsNum(command, argSize + 1, argSize);
                 }
 
                 stringOperation.multiSet(arguments);
                 return SimpleResponse.ok();
 
             case ProtocolConstant.STRING_SETEX:
-                if (argNum != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                if (argSize != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                timeout = Utils.toInt(arguments.get(1));
-                stringOperation.setExpire(arguments.get(0), timeout, arguments.get(2));
+                timeout = NumberUtils.toInt(arguments.get(1));
+                stringOperation.setExpire(key, timeout, arguments.get(2));
                 return SimpleResponse.ok();
 
             case ProtocolConstant.STRING_SETNX:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                stringOperation.setIfNotExists(arguments.get(0), arguments.get(1));
+                stringOperation.setIfNotExists(key, arguments.get(1));
                 return SimpleResponse.ok();
 
             case ProtocolConstant.STRING_SETRANGE:
-                if (argNum != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argNum);
+                if (argSize != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                num = Utils.toInt(arguments.get(1));
-                num = stringOperation.setRange(arguments.get(0), num, arguments.get(2));
+                num = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(num)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                num = stringOperation.setRange(key, num, arguments.get(2));
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.STRING_STRLEN:
-                if (argNum != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                if (argSize != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                num = stringOperation.strLen(arguments.get(0));
+                num = stringOperation.strLen(key);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.STRING_INCR:
-                if (argNum != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                if (argSize != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                num = stringOperation.increment(arguments.get(0));
+                num = stringOperation.increment(key);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.STRING_INCRBY:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = Utils.toInt(arguments.get(1));
-                if (num == 0) {
-                    return ErrorResponse.errorSyntax();
+                num = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(num)) {
+                    return ErrorResponse.errorInvalidNumber();
                 }
-                num = stringOperation.incrementBy(arguments.get(0), num);
+                num = stringOperation.incrementBy(key, num);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.STRING_INCRBYFLOAT:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                numFloat = Utils.toFloat(arguments.get(1));
-                if (numFloat == 0) {
-                    return ErrorResponse.errorSyntax();
+                numFloat = NumberUtils.toFloat(arguments.get(1));
+                if (Objects.isNull(numFloat)) {
+                    return ErrorResponse.errorInvalidNumber();
                 }
-                numFloat = stringOperation.incrementByFloat(arguments.get(0), numFloat);
+                numFloat = stringOperation.incrementByFloat(key, numFloat);
                 return NumericResponse.numericResponse(numFloat);
 
             case ProtocolConstant.STRING_DECR:
-                if (argNum != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argNum);
+                if (argSize != 1) {
+                    return ErrorResponse.errorArgsNum(command, 1, argSize);
                 }
-                num = stringOperation.decrement(arguments.get(0));
+                num = stringOperation.decrement(key);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.STRING_DECRBY:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = Utils.toInt(arguments.get(1));
-                if (num == 0) {
-                    return ErrorResponse.errorSyntax();
+                num = NumberUtils.toInt(arguments.get(1));
+                if (Objects.isNull(num)) {
+                    return ErrorResponse.errorInvalidNumber();
                 }
-                num = stringOperation.decrementBy(arguments.get(0), num);
+                num = stringOperation.decrementBy(key, num);
                 return NumericResponse.numericResponse(num);
 
             case ProtocolConstant.STRING_APPEND:
-                if (argNum != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argNum);
+                if (argSize != 2) {
+                    return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = stringOperation.append(arguments.get(0), arguments.get(1));
+                num = stringOperation.append(key, arguments.get(1));
                 return NumericResponse.numericResponse(num);
 
             default:

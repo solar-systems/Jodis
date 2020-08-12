@@ -10,6 +10,11 @@ log.dir=log/
 # JDB log file name
 log.jdb=default.jdb
 
-# AOF log file name
-log.aof=default.aof
+# WAL log file name
+log.wal=default.wal
 
+# Server max request size
+server.max.request=1024
+
+# Server max concurrency size
+server.max.concurrency=64
