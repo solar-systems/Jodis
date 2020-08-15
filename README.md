@@ -27,8 +27,16 @@ Similar with Redis RDB.
 1. Single Network Thread, Single I/O Thread;
 2. Support RESP2 text protocol.
 
-### LRU(TODO)
-
-### TTL(TODO)
+### TODO List
+1. LRU
+2. TTL
+3. IO优化
+4. 持久化和加载
+5. 命令优化和测试
+6. 代码局部优化和持续重构
+7. 文档和Example编写
+8. 嵌入式JodisServer 开发
+9. client开发
+10. JMH测试
 
 

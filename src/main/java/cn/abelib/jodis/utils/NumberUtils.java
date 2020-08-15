@@ -22,7 +22,7 @@ public class NumberUtils {
 
     /**
      * 如果解析失败需要返回一个特定的值
-     * @param s
+     * @param num
      * @return
      */
     public static Integer toInt(String num) {

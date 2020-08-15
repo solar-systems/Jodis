@@ -13,7 +13,7 @@ public class JodisConfig {
     private final Properties props;
 
     /**
-     * todo 日志加载配置 重写日志配置，线程池配置，网络连接配置
+     * 日志加载配置, 重写日志配置, 网络连接配置
      * @param props
      */
     public JodisConfig(Properties props) {
@@ -56,6 +56,22 @@ public class JodisConfig {
         return logWal;
     }
 
+    public int getRewriteSize() {
+        int rewriteSize = PropertiesUtils.getInteger(props, "log.wal.rewrite.size", 64 * 1024 * 1024);
+        if (rewriteSize < 64 * 1024 || rewriteSize > 1024 * 1024 * 1024) {
+            throw new ConfigrationException(StringUtils.format("Invalid rewriteSize {}, rewriteSize must in [64KB, 1024MB]", rewriteSize));
+        }
+        return rewriteSize;
+    }
+
+    public int getReloadMode() {
+        int reloadMode = PropertiesUtils.getInteger(props, "log.reload.mode", 2);
+        if (reloadMode < 0 || reloadMode > 2) {
+            throw new ConfigrationException(StringUtils.format("Invalid reloadMode {}, reloadMode must be a integer in [0, 1, 2]", reloadMode));
+        }
+        return reloadMode;
+    }
+
     public int getMaxRequestSize() {
         int maxRequestSize = PropertiesUtils.getInteger(props, "server.max.request", 1024);
         if (maxRequestSize < 1024 || maxRequestSize > 1024 * 8) {
@@ -71,5 +87,4 @@ public class JodisConfig {
         }
         return concurrency;
     }
-
 }

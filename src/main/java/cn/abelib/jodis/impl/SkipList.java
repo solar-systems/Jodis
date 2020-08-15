@@ -4,14 +4,14 @@ import cn.abelib.jodis.utils.KV;
 import cn.abelib.jodis.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  * @Author: abel.huang
  * @Date: 2020-07-06 23:51
- *  todo Iterator
  */
-public class SkipList {
+public class SkipList implements Iterable<KV<Double, String>>{
     private static final double DEFAULT_SKIP_LIST_P = 0.5;
     private static final int DEFAULT_MAX_LEVEL = 8;
 
@@ -33,7 +33,7 @@ public class SkipList {
 
         @Override
         public String toString() {
-            return  new StringBuilder()
+            return new StringBuilder()
                     .append("{ score: ")
                     .append(score)
                     .append("; level: ")
@@ -234,6 +234,11 @@ public class SkipList {
             result.add(new KV<>(node.score, node.value));
         }
         return result;
+    }
+
+    @Override
+    public Iterator<KV<Double, String>> iterator() {
+        return scoreValues().iterator();
     }
 }
 

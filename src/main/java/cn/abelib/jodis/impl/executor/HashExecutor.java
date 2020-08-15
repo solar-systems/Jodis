@@ -129,18 +129,20 @@ public class HashExecutor implements Executor {
                 flag = hashOperation.hashSetIfNotExists(key, arguments.get(1), arguments.get(2));
                 return NumericResponse.numericResponse(flag ? 1 : 0);
 
-            /**
-             * todo
-             */
             case ProtocolConstant.HASH_HMSET:
-                flag = hashOperation.hashMultiSet(key, arguments);
+                if (argSize % 2 == 0) {
+                    return ErrorResponse.errorArgsNum(command);
+                }
+                list = arguments.subList(1, argSize);
+                hashOperation.hashMultiSet(key, list);
                 return SimpleResponse.ok();
 
-            /**
-             * todo
-             */
             case ProtocolConstant.HASH_HMGET:
-                list = hashOperation.hashMultiGet(key, arguments);
+                if (argSize < 2) {
+                    return ErrorResponse.errorArgsNum(command);
+                }
+                list = arguments.subList(1, argSize);
+                list = hashOperation.hashMultiGet(key, list);
                 return ListResponse.stringListResponse(list);
 
             default:

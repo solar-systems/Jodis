@@ -68,4 +68,9 @@ public class Request {
     public void setRequest(String request) {
         this.request = request;
     }
+
+    @Override
+    public String toString() {
+        return this.request;
+    }
 }

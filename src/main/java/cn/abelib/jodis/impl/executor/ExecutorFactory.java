@@ -17,6 +17,7 @@ public class ExecutorFactory {
     private Executor setExecutor;
     private Executor hashExecutor;
     private Executor sortedSetExecutor;
+    private Executor serverExecutor;
 
     public ExecutorFactory(JodisDb jodisDb) {
         this.keyExecutor = new KeyExecutor(jodisDb);
@@ -25,6 +26,7 @@ public class ExecutorFactory {
         this.setExecutor = new SetExecutor(jodisDb);
         this.hashExecutor = new HashExecutor(jodisDb);
         this.sortedSetExecutor = new SortedSetExecutor(jodisDb);
+        this.serverExecutor = new ServerExecutor(jodisDb);
     }
 
     /**
@@ -50,6 +52,8 @@ public class ExecutorFactory {
             response = this.setExecutor.execute(request);
         } else if (ProtocolConstant.ZSET_CMDS.contains(command)) {
             response = this.sortedSetExecutor.execute(request);
+        } else if (ProtocolConstant.SERVER_CMDS.contains(command)) {
+            response = this.serverExecutor.execute(request);
         } else {
             // cmd is unknown
             response = ErrorResponse.errorUnknownCmd(command);

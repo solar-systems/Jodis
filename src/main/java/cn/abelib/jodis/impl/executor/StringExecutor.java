@@ -115,17 +115,6 @@ public class StringExecutor implements Executor {
                 stringOperation.setIfNotExists(key, arguments.get(1));
                 return SimpleResponse.ok();
 
-            case ProtocolConstant.STRING_SETRANGE:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                num = NumberUtils.toInt(arguments.get(1));
-                if (Objects.isNull(num)) {
-                    return ErrorResponse.errorInvalidNumber();
-                }
-                num = stringOperation.setRange(key, num, arguments.get(2));
-                return NumericResponse.numericResponse(num);
-
             case ProtocolConstant.STRING_STRLEN:
                 if (argSize != 1) {
                     return ErrorResponse.errorArgsNum(command, 1, argSize);

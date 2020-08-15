@@ -1,7 +1,10 @@
 package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
+import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
+import cn.abelib.jodis.protocol.Response;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +29,12 @@ public class StringExecutorTest {
      */
     @Test
     public void executeTest() {
-        Request request = new Request();
-        stringExecutor.execute(request);
+        Request request1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("hello", "world"));
+        Response response1 = stringExecutor.execute(request1);
+        System.err.println(response1.toRespString());
+
+        Request request2 = new Request(ProtocolConstant.STRING_GET, Lists.newArrayList("hello"));
+        Response response2 = stringExecutor.execute(request2);
+        System.err.println(response2.toRespString());
     }
 }

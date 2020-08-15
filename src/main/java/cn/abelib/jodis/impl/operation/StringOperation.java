@@ -77,26 +77,6 @@ public class StringOperation extends KeyOperation {
     }
 
     /**
-     * todo
-     * Redis command: SETRANGE
-     * @param key
-     * @param offset
-     * @param value
-     * @return
-     */
-    public int setRange(String key, int offset, String value) {
-        if (!exists(key)) {
-            return 0;
-        }
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        return 0;
-    }
-
-    /**
-     * todo
      * Redis command: GETSET
      * @param key
      * @param value

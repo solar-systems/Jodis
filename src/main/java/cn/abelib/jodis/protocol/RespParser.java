@@ -1,10 +1,12 @@
 package cn.abelib.jodis.protocol;
 
+import cn.abelib.jodis.utils.NumberUtils;
 import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -20,18 +22,26 @@ public class RespParser {
         // maybe inline command
         if (!request.startsWith(ProtocolConstant.LIST_PREFIX)) {
             arguments = request.split(StringUtils.SPACE);
+            parsed = true;
         } else {
-            int sizeEnd = request.indexOf(StringUtils.CLRF);
-            int requestLength = request.length();
-            String sizeString = request.substring(1, sizeEnd);
-            int size = Integer.parseInt(sizeString);
-            String cmdString = request.substring(sizeEnd, requestLength);
-            arguments = cmdString.split(StringUtils.CLRF);
-            if (arguments.length != size) {
+            request = request.substring(1);
+            String[] cmds = request.split(StringUtils.CLRF);
+            String sizeStr = cmds[0].trim();
+            Integer cmdSize = NumberUtils.toInt(sizeStr);
+            if (Objects.isNull(cmdSize)) {
                 Response errResp = ErrorResponse.errorSyntax();
                 return Request.badRequest(errResp);
             }
-            parsed = true;
+            if (cmdSize * 2 + 1 != cmds.length || cmds.length < 3) {
+                Response errResp = ErrorResponse.errorSyntax();
+                return Request.badRequest(errResp);
+            }
+            arguments = new String[cmdSize];
+            int idx = 0;
+            for (int i = 2; i < cmds.length; i += 2) {
+                arguments[idx] = cmds[i];
+                idx ++;
+            }
         }
         int len = arguments.length;
         if (len < 1) {
@@ -53,15 +63,13 @@ public class RespParser {
      * eg *3\r\n$3\r\nset\r\n$4\r\nname\r\n$3\r\nbob\r\n
     */
     public String parseRequest(String[] arguments) {
-        int len = arguments.length;
         StringBuilder request = new StringBuilder(ProtocolConstant.LIST_PREFIX);
-        request.append(len).append(StringUtils.CLRF);
-        for (String arg : arguments) {
-            request.append(ProtocolConstant.MULTI_STRING_PREFIX)
-                    .append(arg.length())
-                    .append(StringUtils.CLRF)
-                    .append(arg)
-                    .append(StringUtils.CLRF);
+        for (int i = 0; i < arguments.length; i ++) {
+            String arg = arguments[i];
+            request.append(arg);
+            if (i != arguments.length - 1) {
+                request.append(StringUtils.SPACE);
+            }
         }
         return request.toString();
     }

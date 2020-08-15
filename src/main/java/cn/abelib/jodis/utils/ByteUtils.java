@@ -1,5 +1,7 @@
 package cn.abelib.jodis.utils;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -52,15 +54,6 @@ public class ByteUtils {
         return ans.toString();
     }
 
-//    public static String binaryToString(String binary){
-//        String[] tempStr = binary.split(" ");
-//        char[] chars = new char[tempStr.length];
-//        for(int i = 0; i < tempStr.length; i++) {
-//            chars[i] = BinstrToChar(tempStr[i]);
-//        }
-//        return String.valueOf(chars);
-//    }
-
     public static byte[] stringBytesWithLen(String str) {
         int len = str.length();
         byte[] lens = int2Bytes(len);
@@ -81,5 +74,31 @@ public class ByteUtils {
         byte[] result = new byte[len];
         System.arraycopy(buf, offset, result, 0, len);
         return result;
+    }
+
+    /**
+     * ByteBuffer -> String(utf8)
+     * @param buffer
+     * @return
+     */
+    public static String toUTF8String(ByteBuffer buffer) {
+        CharBuffer charBuffer = StandardCharsets.UTF_8.decode(buffer);
+        return charBuffer.toString();
+    }
+
+    /**
+     * @param buffer
+     * @param len
+     * @return
+     */
+    public static String toUTF8String(ByteBuffer buffer, int len) {
+        if (buffer.remaining() < len) {
+            return null;
+        }
+        byte[] bytes = new byte[len];
+        for (int i = 0; i < len; i ++) {
+            bytes[i] = buffer.get();
+        }
+        return ByteUtils.bytes2UTF8(bytes);
     }
 }

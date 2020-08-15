@@ -2,12 +2,13 @@ package cn.abelib.jodis.log;
 
 import cn.abelib.jodis.impl.*;
 import cn.abelib.jodis.impl.SkipList;
+import cn.abelib.jodis.utils.ByteUtils;
 import cn.abelib.jodis.utils.KV;
 import com.google.common.collect.Sets;
+
+import java.nio.ByteBuffer;
 import java.util.*;
 
-import static cn.abelib.jodis.log.JdbConstant.*;
-import static cn.abelib.jodis.utils.ByteUtils.*;
 
 /**
  * @Author: abel.huang
@@ -19,29 +20,23 @@ public class JdbReader {
 
     }
 
-    public KV<String, JodisString> readString(byte[] bytes) {
-        if (Objects.isNull(bytes) || bytes.length < 1) {
+    public KV<String, JodisString> readString(ByteBuffer buffer) {
+        if (Objects.isNull(buffer)) {
             return new KV<>();
         }
-        int idx = JDB_TYPE_SIZE;
-        int totalLen =  bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-        idx += JDB_INT_SIZE;
-
-        int keyLen =  bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-        idx += JDB_INT_SIZE;
-
-        String key = bytes2UTF8(slice(bytes, idx, keyLen));
-        idx += keyLen;
-
-        int valueLen =  bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-        idx += JDB_INT_SIZE;
-
-        String value = bytes2UTF8(slice(bytes, idx, valueLen));
+        buffer.flip();
+        if (buffer.remaining() < 1) {
+            return new KV<>();
+        }
+        int keyLen = buffer.getInt();
+        String key = ByteUtils.toUTF8String(buffer, keyLen);
+        int valueLen =  buffer.getInt();
+        String value = ByteUtils.toUTF8String(buffer, valueLen);
         return new KV<>(key, new JodisString(value));
     }
 
-    public KV<String, JodisList> readList(byte[] bytes) {
-        KV<String, List<String>> ans = readCollection(bytes);
+    public KV<String, JodisList> readList(ByteBuffer buffer) {
+        KV<String, List<String>> ans = readCollection(buffer);
         if (ans.isNull()) {
             return new KV<>();
         }
@@ -51,8 +46,8 @@ public class JdbReader {
         return new KV<>(key, jodisList);
     }
 
-    public KV<String, JodisHash> readMap(byte[] bytes) {
-        KV<String, List<String>> ans = readCollection(bytes);
+    public KV<String, JodisHash> readMap(ByteBuffer buffer) {
+        KV<String, List<String>> ans = readCollection(buffer);
         if (ans.isNull()) {
             return new KV<>();
         }
@@ -67,8 +62,8 @@ public class JdbReader {
         return new KV<>(key, jodisHash);
     }
 
-    public KV<String, JodisSet> readSet(byte[] bytes) {
-        KV<String, List<String>> ans = readCollection(bytes);
+    public KV<String, JodisSet> readSet(ByteBuffer buffer) {
+        KV<String, List<String>> ans = readCollection(buffer);
         if (ans.isNull()) {
             return new KV<>();
         }
@@ -78,8 +73,8 @@ public class JdbReader {
         return new KV<>(key, jodisSet);
     }
 
-    public KV<String, JodisSortedSet> readZSet(byte[] bytes) {
-        KV<String, List<String>> ans = readCollection(bytes);
+    public KV<String, JodisSortedSet> readZSet(ByteBuffer buffer) {
+        KV<String, List<String>> ans = readCollection(buffer);
         if (ans.isNull()) {
             return new KV<>();
         }
@@ -98,32 +93,22 @@ public class JdbReader {
         return new KV<>(key, jodisSortedSet);
     }
 
-    private KV<String, List<String>> readCollection(byte[] bytes) {
-        if (Objects.isNull(bytes) || bytes.length < 1) {
-            return new KV();
+    private KV<String, List<String>> readCollection(ByteBuffer buffer) {
+        if (Objects.isNull(buffer)) {
+            return new KV<>();
         }
-        int idx = JDB_TYPE_SIZE;
-        int totalLen =  bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-        idx += JDB_INT_SIZE;
-
-        int keyLen =  bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-        idx += JDB_INT_SIZE;
-
-        String key = bytes2UTF8(slice(bytes, idx, keyLen));
-        idx += keyLen;
-
+        buffer.flip();
+        if (buffer.remaining() < 1) {
+            return new KV<>();
+        }
+        int keyLen = buffer.getInt();
+        String key = ByteUtils.toUTF8String(buffer, keyLen);
         // 集合长度
-        int len = bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-        idx += JDB_INT_SIZE;
-
+        int len = buffer.getInt();
         List<String> value = new ArrayList<>(len);
-
         for (int i = 0; i < len ; i ++) {
-            int itemLen = bytes2Int(slice(bytes, idx, JDB_INT_SIZE));
-            idx += JDB_INT_SIZE;
-
-            String item = bytes2UTF8(slice(bytes, idx, itemLen));
-            idx += itemLen;
+            int itemLen = buffer.getInt();
+            String item = ByteUtils.toUTF8String(buffer, itemLen);
             value.add(item);
         }
         return new KV<>(key, value);

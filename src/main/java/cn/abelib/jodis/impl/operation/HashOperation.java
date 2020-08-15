@@ -3,6 +3,7 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisHash;
 import cn.abelib.jodis.impl.JodisObject;
+import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -217,22 +218,43 @@ public class HashOperation extends KeyOperation {
     }
 
     /**
-     * todo
+     * Redis command: HMSET
      * @param key
      * @param fieldValues
      * @return
      */
     public boolean hashMultiSet(String key, List<String> fieldValues) {
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
+            map = new HashMap<>(8);
+            this.jodisDb.put(key, JodisObject.putJodisHash(map));
+        }
+        for (int i = 0; i < fieldValues.size(); i += 2) {
+            map.put(fieldValues.get(i), fieldValues.get(i + 1));
+        }
         return true;
     }
 
     /**
-     * todo
+     *  Redis command: HMGET
      * @param key
      * @param fields
      * @return
      */
     public List<String> hashMultiGet(String key, List<String> fields) {
-        return Lists.newArrayList();
+        List<String> ans =  Lists.newArrayList();
+        Map<String, String> map = getHash(key);
+        if (Objects.isNull(map)) {
+            return ans;
+        }
+        fields.forEach(field -> {
+            String value = map.get(field);
+            if (StringUtils.isEmpty(value)) {
+                ans.add(StringUtils.NIL);
+            } else {
+                ans.add(value);
+            }
+        });
+        return ans;
     }
 }

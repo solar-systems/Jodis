@@ -10,11 +10,7 @@
 
 ### LRANGE
 
-### LREM
-
 ### LSET
-
-### LTRIM
 
 ### RPOP
 

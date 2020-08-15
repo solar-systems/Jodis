@@ -39,4 +39,9 @@ public class KV<K, V> {
     public boolean isNull() {
         return this.isNull;
     }
+
+    @Override
+    public String toString() {
+        return "[K=" + k + ", V=" + v +"]";
+    }
 }

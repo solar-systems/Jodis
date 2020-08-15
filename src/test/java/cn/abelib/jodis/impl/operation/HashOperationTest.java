@@ -2,11 +2,13 @@ package cn.abelib.jodis.impl.operation;
 
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.utils.StringUtils;
+import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @Author: abel.huang
@@ -98,5 +100,20 @@ public class HashOperationTest {
         System.err.println(hashOperation.hashGet("jodis_key_1", "jodis_field_1"));
         hashOperation.hashIncrementByFloat("jodis_key_1", "jodis_field_1", 2.3F);
         System.err.println(hashOperation.hashGet("jodis_key_1", "jodis_field_1"));
+    }
+
+    @Test
+    public void hashMultiSetTest() {
+        hashOperation.hashMultiSet("jodis_key_1", Lists.newArrayList("jodis_field_1", "jodis_value_1",
+                "jodis_field_2", "jodis_value_2", "jodis_field_3", "jodis_value_3"));
+        System.err.println(hashOperation.getHash("jodis_key_1"));
+    }
+
+    @Test
+    public void hashMultiGetTest() {
+        hashOperation.hashMultiSet("jodis_key_1", Lists.newArrayList("jodis_field_1", "jodis_value_1",
+                "jodis_field_2", "jodis_value_2", "jodis_field_3", "jodis_value_3"));
+        List<String> list = hashOperation.hashMultiGet("jodis_key_1", Lists.newArrayList("jodis_field_1", "jodis_field_2", "jodis_field_3"));
+        System.err.println(list);
     }
 }

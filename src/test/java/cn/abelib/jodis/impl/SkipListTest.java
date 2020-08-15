@@ -1,5 +1,6 @@
 package cn.abelib.jodis.impl;
 
+import cn.abelib.jodis.utils.KV;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,5 +56,17 @@ public class SkipListTest {
         skipList.delete(3);
         Assert.assertSame(skipList.size(),2);
         Assert.assertNull(skipList.find(3));
+    }
+
+    @Test
+    public void iteratorTest() {
+        skipList.add(1, "Hello");
+        skipList.add(3, "World");
+        skipList.add(2, "Skip");
+        skipList.add(4, "List");
+
+        for (KV<Double, String> kv : skipList) {
+            System.err.println(kv);
+        }
     }
 }

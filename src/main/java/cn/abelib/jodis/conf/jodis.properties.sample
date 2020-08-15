@@ -13,6 +13,12 @@ log.jdb=default.jdb
 # WAL log file name
 log.wal=default.wal
 
+# Rewrite file size limit
+log.wal.rewrite.size=64 * 1024 * 1024
+
+# 0: WAL, 1:JDB, 2:MIX
+log.reload.mode=2
+
 # Server max request size
 server.max.request=1024
 

@@ -3,6 +3,7 @@ package cn.abelib.jodis.log;
 import cn.abelib.jodis.impl.*;
 import cn.abelib.jodis.utils.ByteUtils;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
@@ -34,26 +35,22 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeString(String key, JodisString value) {
+    public ByteBuffer writeString(String key, JodisString value) {
         String valueString = value.getHolder();
         byte[] keys = ByteUtils.stringBytesWithLen(key);
         byte[] values = ByteUtils.stringBytesWithLen(valueString);
         int keysLen =  keys.length;
         int valuesLen = values.length;
         int len = JdbConstant.JDB_TYPE_SIZE + JdbConstant.JDB_INT_SIZE + keysLen + valuesLen;
-        byte[] bytes = new byte[len];
-        int idx = 0;
-        bytes[0] = JdbConstant.JDB_TYPE_STRING;
-        idx += JdbConstant.JDB_TYPE_SIZE;
 
-        System.arraycopy(ByteUtils.int2Bytes(len), 0, bytes, idx, JdbConstant.JDB_INT_SIZE);
-        idx += JdbConstant.JDB_INT_SIZE;
+        ByteBuffer buffer = ByteBuffer.allocate(len);
 
-        System.arraycopy(keys, 0, bytes, idx, keysLen);
-        idx += keysLen;
+        buffer.put(JdbConstant.JDB_TYPE_STRING);
+        buffer.putInt(len);
+        buffer.put(keys);
+        buffer.put(values);
 
-        System.arraycopy(values, 0, bytes, idx, valuesLen);
-        return bytes;
+        return buffer;
     }
 
     /**
@@ -65,7 +62,7 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeList(String key, JodisList value) {
+    public ByteBuffer writeList(String key, JodisList value) {
         List<String> values = value.getHolder();
         return writeCollection(key, values, JdbConstant.JDB_TYPE_LIST);
     }
@@ -79,7 +76,7 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeHash(String key, JodisHash value) {
+    public ByteBuffer writeHash(String key, JodisHash value) {
         Map<String, String> values = value.getHolder();
         List<String> kvs = new ArrayList<>(values.keySet());
         kvs.addAll(values.values());
@@ -95,7 +92,7 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeSet(String key, JodisSet value) {
+    public ByteBuffer writeSet(String key, JodisSet value) {
         Set<String> values = value.getHolder();
         return writeCollection(key, values, JdbConstant.JDB_TYPE_SET);
     }
@@ -110,7 +107,7 @@ public class JdbWriter {
      * @param value
      * @return
      */
-    public byte[] writeZSet(String key, JodisSortedSet value) {
+    public ByteBuffer writeZSet(String key, JodisSortedSet value) {
         Map<String, Double> values = value.getHolder();
         List<String> kvs = new ArrayList<>(values.size() * 2);
         values.forEach((k, v) -> {
@@ -120,7 +117,7 @@ public class JdbWriter {
         return writeCollection(key, kvs, JdbConstant.JDB_TYPE_ZSET);
     }
 
-    private byte[] writeCollection(String key, Collection<String> value, byte jdbType) {
+    private ByteBuffer writeCollection(String key, Collection<String> value, byte jdbType) {
         int totalLen = 0;
         List<byte[]> valuesBytes = new ArrayList<>(value.size());
         for (String item : value) {
@@ -136,27 +133,17 @@ public class JdbWriter {
         // 标志位长， 总长度
         totalLen += JdbConstant.JDB_TYPE_SIZE  + JdbConstant.JDB_INT_SIZE ;
 
-        byte[] bytes = new byte[totalLen];
-        int idx = 0;
+        ByteBuffer buffer = ByteBuffer.allocate(totalLen);
         // 类型
-        bytes[0] = jdbType;
-        idx += JdbConstant.JDB_TYPE_SIZE;
-
+        buffer.put(jdbType);
         //总长
-        System.arraycopy(ByteUtils.int2Bytes(totalLen), 0, bytes, idx, JdbConstant.JDB_INT_SIZE);
-        idx += JdbConstant.JDB_INT_SIZE;
-
+        buffer.putInt(totalLen);
         //键长
-        System.arraycopy(keys, 0, bytes, idx, keysLen);
-        idx += keysLen;
-
-        System.arraycopy(ByteUtils.int2Bytes(value.size()), 0, bytes, idx, JdbConstant.JDB_INT_SIZE);
-        idx += JdbConstant.JDB_INT_SIZE;
-
+        buffer.put(keys);
+        buffer.putInt(value.size());
         for (byte[] item : valuesBytes) {
-            System.arraycopy(item, 0, bytes, idx, item.length);
-            idx += item.length;
+            buffer.put(item);
         }
-        return bytes;
+        return buffer;
     }
 }

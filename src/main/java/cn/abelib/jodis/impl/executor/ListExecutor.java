@@ -114,32 +114,6 @@ public class ListExecutor implements Executor {
                 list = listOperation.listRange(key, start, end);
                 return ListResponse.stringListResponse(list);
 
-            case ProtocolConstant.LIST_LREM:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                num = NumberUtils.toInt(arguments.get(1));
-                if (Objects.isNull(num)) {
-                    return ErrorResponse.errorInvalidNumber();
-                }
-                num = listOperation.listRemove(key, num, arguments.get(2));
-                return NumericResponse.numericResponse(num);
-
-            case ProtocolConstant.LIST_LTRIM:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                start = NumberUtils.toInt(arguments.get(1));
-                if (Objects.isNull(start)) {
-                    return ErrorResponse.errorInvalidNumber();
-                }
-                end = NumberUtils.toInt(arguments.get(2));
-                if (Objects.isNull(end)) {
-                    return ErrorResponse.errorInvalidNumber();
-                }
-                listOperation.leftTrim(key, start, end);
-                return SimpleResponse.ok();
-
             default:
         }
         return ErrorResponse.errorUnknownCmd(command);

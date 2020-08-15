@@ -34,6 +34,8 @@ public class JodisDb {
 
     private RespParser respParser;
 
+    private JodisConfig jodisConfig;
+
     /**
      * Aof文件写入
      */
@@ -67,13 +69,14 @@ public class JodisDb {
 
         respParser = new RespParser();
         noNeed = false;
+        this.jodisConfig = jodisConfig;
+        loadFromDisk();
     }
 
     /**
      * default for test
-     * @throws IOException
      */
-    public JodisDb() throws IOException {
+    public JodisDb() {
         jodisCollection = new ConcurrentHashMap<>();
         executorFactory = new ExecutorFactory(this);
         requestQueue = new ArrayList<>(10);
@@ -101,6 +104,13 @@ public class JodisDb {
      */
     public void remove(String key) {
         this.jodisCollection.remove(key);
+    }
+
+    /**
+     * clear
+     */
+    public void clear() {
+        this.jodisCollection.clear();
     }
 
     /**
@@ -149,7 +159,17 @@ public class JodisDb {
     }
 
     /**
+     * todo
+     * 从磁盘加载数据
+     */
+    public void loadFromDisk() {
+        int loadMode = jodisConfig.getReloadMode();
+
+    }
+
+    /**
      * todo 合理位置调用 rewriteaof
+     * 重写的规模，比如multi操作的最大值
      * Aof重写
      * @throws IOException
      */

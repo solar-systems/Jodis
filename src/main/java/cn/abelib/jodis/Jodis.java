@@ -49,7 +49,6 @@ public class Jodis implements Closeable {
     public void start(JodisConfig config) {
         jodisServer = new JodisServer(config);
 
-        // todo Executor
         shutdownHook = new Thread(() -> {
             jodisServer.close();
             jodisServer.awaitShutdown();
