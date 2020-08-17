@@ -1,6 +1,5 @@
 package cn.abelib.jodis.impl.operation;
 
-
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisObject;
 import cn.abelib.jodis.impl.JodisSet;
@@ -55,13 +54,10 @@ public class SetOperation extends KeyOperation {
             set = new HashSet<>();
             set.add(member);
             this.jodisDb.put(key, JodisObject.putJodisSet(set));
-            return 0;
-        }
-
-        if (set.add(member)) {
             return 1;
         }
-        return 0;
+
+        return set.add(member) ? 1 : 0;
     }
 
     /**

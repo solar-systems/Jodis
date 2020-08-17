@@ -25,7 +25,7 @@ public class NumberUtils {
      * @param num
      * @return
      */
-    public static Integer toInt(String num) {
+    public static Integer parseInt(String num) {
         Integer ans;
         try {
             ans = Integer.parseInt(num);
@@ -40,7 +40,7 @@ public class NumberUtils {
      * @param num
      * @return
      */
-    public static Float toFloat(String num) {
+    public static Float parseFloat(String num) {
         Float ans;
         try {
             ans = Float.parseFloat(num);
@@ -55,7 +55,7 @@ public class NumberUtils {
      * @param num
      * @return
      */
-    public static Double toDouble(String num) {
+    public static Double parseDouble(String num) {
         Double ans;
         try {
             ans = Double.parseDouble(num);

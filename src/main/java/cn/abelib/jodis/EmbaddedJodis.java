@@ -1,6 +1,7 @@
 package cn.abelib.jodis;
 
 import cn.abelib.jodis.impl.JodisDb;
+import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import cn.abelib.jodis.server.JodisConfig;
 import cn.abelib.jodis.utils.Logger;
@@ -37,6 +38,10 @@ public class EmbaddedJodis {
         Properties  mainProperties = PropertiesUtils.loadProps(propsFileName);
         JodisConfig config = new JodisConfig(mainProperties);
         return new EmbaddedJodis(config);
+    }
+
+    public  Response execute(Request request) throws IOException {
+        return jodisDb.execute(request);
     }
 
     public  Response execute(String request) throws IOException {

@@ -1,6 +1,6 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.utils.KV;
+import cn.abelib.jodis.utils.KeyValue;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,8 +65,8 @@ public class SkipListTest {
         skipList.add(2, "Skip");
         skipList.add(4, "List");
 
-        for (KV<Double, String> kv : skipList) {
-            System.err.println(kv);
+        for (KeyValue<Double, String> keyValue : skipList) {
+            System.err.println(keyValue);
         }
     }
 }

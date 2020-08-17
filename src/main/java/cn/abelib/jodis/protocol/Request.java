@@ -38,6 +38,10 @@ public class Request {
         return this.needLog;
     }
 
+    public void needLog(boolean isNeed) {
+        this.needLog = isNeed;
+    }
+
     public String getCommand() {
         return this.command;
     }

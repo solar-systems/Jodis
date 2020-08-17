@@ -77,11 +77,11 @@ public class StringExecutor implements Executor {
                 if (argSize != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                start = NumberUtils.toInt(key);
+                start = NumberUtils.parseInt(key);
                 if (Objects.isNull(start)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
-                end = NumberUtils.toInt(arguments.get(1));
+                end = NumberUtils.parseInt(arguments.get(1));
                 if (Objects.isNull(end)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
@@ -104,7 +104,7 @@ public class StringExecutor implements Executor {
                 if (argSize != 3) {
                     return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                timeout = NumberUtils.toInt(arguments.get(1));
+                timeout = NumberUtils.parseInt(arguments.get(1));
                 stringOperation.setExpire(key, timeout, arguments.get(2));
                 return SimpleResponse.ok();
 
@@ -133,7 +133,7 @@ public class StringExecutor implements Executor {
                 if (argSize != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = NumberUtils.toInt(arguments.get(1));
+                num = NumberUtils.parseInt(arguments.get(1));
                 if (Objects.isNull(num)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
@@ -144,7 +144,7 @@ public class StringExecutor implements Executor {
                 if (argSize != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                numFloat = NumberUtils.toFloat(arguments.get(1));
+                numFloat = NumberUtils.parseFloat(arguments.get(1));
                 if (Objects.isNull(numFloat)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
@@ -162,7 +162,7 @@ public class StringExecutor implements Executor {
                 if (argSize != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = NumberUtils.toInt(arguments.get(1));
+                num = NumberUtils.parseInt(arguments.get(1));
                 if (Objects.isNull(num)) {
                     return ErrorResponse.errorInvalidNumber();
                 }

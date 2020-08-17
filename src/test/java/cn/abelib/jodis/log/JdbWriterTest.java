@@ -1,7 +1,7 @@
 package cn.abelib.jodis.log;
 
 import cn.abelib.jodis.impl.*;
-import cn.abelib.jodis.utils.KV;
+import cn.abelib.jodis.utils.KeyValue;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -36,9 +36,9 @@ public class JdbWriterTest {
         ByteBuffer sub = ByteBuffer.allocate(buffer.capacity() - 5);
         buffer.position(5);
         sub.put(buffer);
-        KV<String, JodisString> kv = jdbReader.readString(sub);
-        Assert.assertEquals(key, kv.getK());
-        Assert.assertEquals(value.getHolder(), kv.getV().getHolder());
+        KeyValue<String, JodisString> keyValue = jdbReader.readString(sub);
+        Assert.assertEquals(key, keyValue.getKey());
+        Assert.assertEquals(value.getHolder(), keyValue.getValue().getHolder());
     }
 
     @Test
@@ -50,9 +50,9 @@ public class JdbWriterTest {
         ByteBuffer sub = ByteBuffer.allocate(buf.capacity() - 5);
         buf.position(5);
         sub.put(buf);
-        KV<String, JodisList> kv = jdbReader.readList(sub);
-        Assert.assertEquals(kv.getK(), key);
-        Assert.assertEquals(kv.getV().getHolder().size(), value.getHolder().size());
+        KeyValue<String, JodisList> keyValue = jdbReader.readList(sub);
+        Assert.assertEquals(keyValue.getKey(), key);
+        Assert.assertEquals(keyValue.getValue().getHolder().size(), value.getHolder().size());
     }
 
     @Test
@@ -64,9 +64,9 @@ public class JdbWriterTest {
         ByteBuffer sub = ByteBuffer.allocate(buf.capacity() - 5);
         buf.position(5);
         sub.put(buf);
-        KV<String, JodisSet> kv = jdbReader.readSet(sub);
-        Assert.assertEquals(kv.getK(), key);
-        Assert.assertEquals(kv.getV().getHolder().size(), value.getHolder().size());
+        KeyValue<String, JodisSet> keyValue = jdbReader.readSet(sub);
+        Assert.assertEquals(keyValue.getKey(), key);
+        Assert.assertEquals(keyValue.getValue().getHolder().size(), value.getHolder().size());
     }
 
     @Test
@@ -82,9 +82,9 @@ public class JdbWriterTest {
         ByteBuffer sub = ByteBuffer.allocate(buf.capacity() - 5);
         buf.position(5);
         sub.put(buf);
-        KV<String, JodisHash> kv = jdbReader.readMap(sub);
-        Assert.assertEquals(kv.getK(), key);
-        Assert.assertEquals(kv.getV().getHolder().size(), value.getHolder().size());
+        KeyValue<String, JodisHash> keyValue = jdbReader.readMap(sub);
+        Assert.assertEquals(keyValue.getKey(), key);
+        Assert.assertEquals(keyValue.getValue().getHolder().size(), value.getHolder().size());
     }
 
     @Test
@@ -100,8 +100,8 @@ public class JdbWriterTest {
         ByteBuffer sub = ByteBuffer.allocate(buf.capacity() - 5);
         buf.position(5);
         sub.put(buf);
-        KV<String, JodisSortedSet> kv = jdbReader.readZSet(sub);
-        Assert.assertEquals(kv.getK(), key);
-        Assert.assertEquals(kv.getV().getHolder().size(), value.getHolder().size());
+        KeyValue<String, JodisSortedSet> keyValue = jdbReader.readZSet(sub);
+        Assert.assertEquals(keyValue.getKey(), key);
+        Assert.assertEquals(keyValue.getValue().getHolder().size(), value.getHolder().size());
     }
 }

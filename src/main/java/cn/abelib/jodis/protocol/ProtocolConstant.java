@@ -10,11 +10,8 @@ import java.util.Set;
  */
 public interface ProtocolConstant {
     String SIMPLE_STRING_PREFIX = "+";
-    /**
-     * ???? todo 未使用？
-     */
     String MULTI_STRING_PREFIX = "$";
-    String INTEGER_NUMBER_PREFiX = ":";
+    String INTEGER_NUMBER_PREFIX = ":";
     String ERROR_PREFIX = "-ERR ";
     String LIST_PREFIX = "*";
     String PONG = "PONG";

@@ -76,7 +76,7 @@ public class HashExecutor implements Executor {
                 if (argSize != 3) {
                     return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                num = NumberUtils.toInt(arguments.get(2));
+                num = NumberUtils.parseInt(arguments.get(2));
                 if (Objects.isNull(num)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
@@ -87,7 +87,7 @@ public class HashExecutor implements Executor {
                 if (argSize != 3) {
                     return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                numFloat = NumberUtils.toFloat(arguments.get(2));
+                numFloat = NumberUtils.parseFloat(arguments.get(2));
                 if (Objects.isNull(numFloat)) {
                     return ErrorResponse.errorInvalidNumber();
                 }

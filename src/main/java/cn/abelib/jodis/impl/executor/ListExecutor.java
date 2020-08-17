@@ -48,7 +48,7 @@ public class ListExecutor implements Executor {
                 if (argSize != 2) {
                     return ErrorResponse.errorArgsNum(command, 2, argSize);
                 }
-                num = NumberUtils.toInt(arguments.get(1));
+                num = NumberUtils.parseInt(arguments.get(1));
                 if (Objects.isNull(num)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
@@ -103,11 +103,11 @@ public class ListExecutor implements Executor {
                 if (argSize != 3) {
                     return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                start = NumberUtils.toInt(arguments.get(1));
+                start = NumberUtils.parseInt(arguments.get(1));
                 if (Objects.isNull(start)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
-                end = NumberUtils.toInt(arguments.get(2));
+                end = NumberUtils.parseInt(arguments.get(2));
                 if (Objects.isNull(end)) {
                     return ErrorResponse.errorInvalidNumber();
                 }

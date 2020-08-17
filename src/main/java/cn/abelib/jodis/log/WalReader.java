@@ -12,24 +12,24 @@ import java.util.Iterator;
  * @Author: abel.huang
  * @Date: 2020-07-14 22:51
  */
-public class AofReader {
-    private Path aofFile;
+public class WalReader {
+    private Path walFile;
     private Path rewrite;
 
-    public AofReader(String dir, String fName) throws IOException {
+    public WalReader(String dir, String fName) throws IOException {
         this.rewrite = Paths.get(dir, fName + ".rewrite");
-        this.aofFile = IoUtils.createFileIfNotExists(dir, fName);
+        this.walFile = IoUtils.createFileIfNotExists(dir, fName);
     }
 
-    public Iterator<String> readAof() throws IOException {
-        return readFile(aofFile);
+    public Iterator<String> readWal() throws IOException {
+        return readFile(walFile);
     }
 
     public Iterator<String> readRewrite() throws IOException {
         return readFile(rewrite);
     }
 
-    public Iterator<String> readFile(Path path) throws IOException {
+    private Iterator<String> readFile(Path path) throws IOException {
         if (!Files.exists(path)) {
             return new Iterator<String>() {
                 @Override

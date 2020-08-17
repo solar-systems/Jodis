@@ -3,7 +3,6 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisHash;
 import cn.abelib.jodis.impl.JodisObject;
-import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

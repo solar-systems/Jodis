@@ -27,7 +27,7 @@ public class RespParser {
             request = request.substring(1);
             String[] cmds = request.split(StringUtils.CLRF);
             String sizeStr = cmds[0].trim();
-            Integer cmdSize = NumberUtils.toInt(sizeStr);
+            Integer cmdSize = NumberUtils.parseInt(sizeStr);
             if (Objects.isNull(cmdSize)) {
                 Response errResp = ErrorResponse.errorSyntax();
                 return Request.badRequest(errResp);

@@ -1,7 +1,8 @@
 package cn.abelib.jodis.log;
 
-
+import cn.abelib.jodis.utils.ByteUtils;
 import cn.abelib.jodis.utils.IoUtils;
+import cn.abelib.jodis.utils.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,11 +15,11 @@ import java.nio.file.StandardOpenOption;
  * @Author: abel.huang
  * @Date: 2020-07-14 22:51
  */
-public class AofWriter {
+public class WalWriter {
     private Path aofFile;
     private Path rewrite;
 
-    public AofWriter(String dir, String fName) throws IOException {
+    public WalWriter(String dir, String fName) throws IOException {
         this.rewrite = Paths.get(dir, fName + ".rewrite");
         this.aofFile = IoUtils.createFileIfNotExists(dir, fName);
     }
@@ -29,7 +30,8 @@ public class AofWriter {
      * @return
      */
     public boolean write(String reqCmd) throws IOException {
-        Files.write(aofFile, reqCmd.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+        reqCmd = reqCmd + StringUtils.CLRF;
+        Files.write(aofFile, ByteUtils.getBytesUTF8(reqCmd), StandardOpenOption.APPEND);
         return true;
     }
 
@@ -45,7 +47,7 @@ public class AofWriter {
     }
 
     /**
-     * AOF重写入磁盘文件
+     * WAL重写入磁盘文件
      * @param reqCmd
      * @return
      * @throws IOException

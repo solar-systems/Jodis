@@ -1,9 +1,6 @@
 package cn.abelib.jodis.impl.operation;
 
 import cn.abelib.jodis.impl.JodisDb;
-import cn.abelib.jodis.impl.JodisObject;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Author: abel.huang

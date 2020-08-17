@@ -85,7 +85,7 @@ public class KeyOperation extends AbstractOperation {
      * @return
      */
     public List<String> keys(String pattern) {
-        if (StringUtils.equals(OperationConstants.WILD_CARD_START, pattern)) {
+        if (StringUtils.equals(StringUtils.STAR, pattern)) {
             return new ArrayList<>(this.jodisDb.keySet());
         }
         return this.jodisDb.keySet()

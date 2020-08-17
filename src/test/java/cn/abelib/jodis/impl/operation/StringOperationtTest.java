@@ -1,7 +1,6 @@
 package cn.abelib.jodis.impl.operation;
 
 import cn.abelib.jodis.impl.JodisDb;
-import cn.abelib.jodis.impl.operation.StringOperation;
 import cn.abelib.jodis.utils.StringUtils;
 import com.google.common.collect.Lists;
 import org.junit.Assert;

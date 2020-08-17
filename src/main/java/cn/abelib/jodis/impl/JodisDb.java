@@ -1,13 +1,16 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.log.AofWriter;
+import cn.abelib.jodis.log.WalReader;
+import cn.abelib.jodis.log.WalWriter;
 import cn.abelib.jodis.log.JdbReader;
 import cn.abelib.jodis.log.JdbWriter;
 import cn.abelib.jodis.protocol.*;
 import cn.abelib.jodis.impl.executor.ExecutorFactory;
 import cn.abelib.jodis.server.JodisConfig;
 import cn.abelib.jodis.utils.CollectionUtils;
+import cn.abelib.jodis.utils.Logger;
 import cn.abelib.jodis.utils.StringUtils;
+import com.google.common.base.Stopwatch;
 
 import java.io.IOException;
 import java.util.*;
@@ -19,6 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2020/6/30 17:40
  */
 public class JodisDb {
+    private Logger logger = Logger.getLogger(JodisDb.class);
+
     /**
      * 存储不带过期时间的key
      */
@@ -37,16 +42,21 @@ public class JodisDb {
     private JodisConfig jodisConfig;
 
     /**
-     * Aof文件写入
+     * Wal文件写入
      */
-    private AofWriter aofWriter;
+    private WalWriter walWriter;
+    /**
+     * WalReader
+     */
+    private WalReader walReader;
+
     /**
      * 请求队列
      */
     private List<Request> requestQueue;
 
     /**
-     * todo jdb
+     * jdbReader
      */
     private JdbReader jdbReader;
 
@@ -55,22 +65,22 @@ public class JodisDb {
     private boolean noNeed;
 
     /**
-     * 是否正在进行Aof文件重写
+     * 是否正在进行Wal文件重写
      */
-    private AtomicBoolean rewriteAof;
+    private AtomicBoolean rewriteWal;
 
     public JodisDb(JodisConfig jodisConfig) throws IOException {
         jodisCollection = new ConcurrentHashMap<>();
         executorFactory = new ExecutorFactory(this);
-        aofWriter = new AofWriter(jodisConfig.getLogDir(), jodisConfig.getLogWal());
-
+        walWriter = new WalWriter(jodisConfig.getLogDir(), jodisConfig.getLogWal());
+        walReader = new WalReader(jodisConfig.getLogDir(), jodisConfig.getLogWal());
         requestQueue = new ArrayList<>(10);
-        rewriteAof = new AtomicBoolean(false);
+        rewriteWal = new AtomicBoolean(false);
 
         respParser = new RespParser();
         noNeed = false;
         this.jodisConfig = jodisConfig;
-        loadFromDisk();
+        loadFromLog();
     }
 
     /**
@@ -80,7 +90,7 @@ public class JodisDb {
         jodisCollection = new ConcurrentHashMap<>();
         executorFactory = new ExecutorFactory(this);
         requestQueue = new ArrayList<>(10);
-        rewriteAof = new AtomicBoolean(false);
+        rewriteWal = new AtomicBoolean(false);
         noNeed = true;
     }
 
@@ -135,13 +145,13 @@ public class JodisDb {
      */
     public Response execute(Request request) throws IOException {
         Response response = executorFactory.execute(request);
-        // 检测是否需要进行AOF
+        // 检测是否需要进行Wal
         if (!noNeed && request.needLog() && !response.isError()) {
-            // 如果正在进行Aof重写
-            if (rewriteAof.get()) {
+            // 如果正在进行Wal重写
+            if (rewriteWal.get()) {
                 requestQueue.add(request);
             } else {
-                aofWriter.write(request.getRequest());
+                walWriter.write(request.getRequest());
             }
         }
         return response;
@@ -158,26 +168,66 @@ public class JodisDb {
         return execute(req);
     }
 
+    public Response execute(String request, boolean isNeed) throws IOException {
+        Request req = respParser.parse(request);
+        req.needLog(isNeed);
+        return execute(req);
+    }
+
     /**
      * todo
      * 从磁盘加载数据
      */
-    public void loadFromDisk() {
+    public void loadFromLog() throws IOException {
         int loadMode = jodisConfig.getReloadMode();
+        if (loadMode == JodisConstant.WAL_MODE) {
+            logger.info("Load from disk with WAL mode started");
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            loadFromWal();
+            logger.info("Load from disk with WAL mode finished, cost: {}", stopwatch.stop().toString());
+        } else if (loadMode == JodisConstant.JDB_MODE) {
+            logger.info("Load from disk with JDB mode started");
+            Stopwatch stopwatch = Stopwatch.createStarted();
+
+            logger.info("Load from disk with JDB mode finished, cost: {}", stopwatch.stop().toString());
+        } else if (loadMode == JodisConstant.MIX_MODE) {
+            logger.info("Load from disk with MIX mode started");
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            loadFromWal();
+            logger.info("Load from disk with MIX mode finished, cost: {}", stopwatch.stop().toString());
+        } else {
+            logger.warn("Invalid load mode :{}", loadMode);
+        }
+    }
+
+    private void loadFromWal() throws IOException {
+        Iterator<String> iterator = walReader.readWal();
+        while (iterator.hasNext()) {
+            String request = iterator.next();
+            if (StringUtils.isNotEmpty(request)) {
+                execute(request.trim(), false);
+            }
+        }
+    }
+
+    /**
+     * todo
+     */
+    private void loadFromJdb() {
 
     }
 
     /**
-     * todo 合理位置调用 rewriteaof
+     * todo 合理位置调用 rewriteWal
      * 重写的规模，比如multi操作的最大值
-     * Aof重写
+     * Wal重写
      * @throws IOException
      */
-    public void rewriteAof() throws IOException {
+    public void rewriteWal() throws IOException {
         Map<String, JodisObject> source = CollectionUtils.deepCopyMap(this.jodisCollection);
         this.requestQueue.clear();
-        this.rewriteAof.set(true);
-        this.aofWriter.startRewrite();
+        this.rewriteWal.set(true);
+        this.walWriter.startRewrite();
         for (Map.Entry<String, JodisObject> entry : source.entrySet()) {
             JodisObject value =  entry.getValue();
             String type = value.type();
@@ -209,13 +259,13 @@ public class JodisDb {
                     cmd = null;
             }
             if (Objects.nonNull(cmd) && StringUtils.isNotEmpty(cmd.toString()) && !cmd.isError()) {
-                this.aofWriter.rewrite(cmd.toString());
+                this.walWriter.rewrite(cmd.toString());
             }
         }
         Iterator<Request> iterator = this.requestQueue.iterator();
         while (iterator.hasNext()) {
-            this.aofWriter.rewrite(iterator.next().toString());
+            this.walWriter.rewrite(iterator.next().toString());
         }
-        this.rewriteAof.set(false);
+        this.rewriteWal.set(false);
     }
 }

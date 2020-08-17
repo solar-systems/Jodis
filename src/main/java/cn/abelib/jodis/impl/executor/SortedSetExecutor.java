@@ -47,7 +47,7 @@ public class SortedSetExecutor implements Executor {
                 if (argSize != 3) {
                     return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                numDouble =  NumberUtils.toDouble(arguments.get(1));
+                numDouble =  NumberUtils.parseDouble(arguments.get(1));
                 if (Objects.isNull(numDouble)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
@@ -72,11 +72,11 @@ public class SortedSetExecutor implements Executor {
                 if (argSize != 3) {
                     return ErrorResponse.errorArgsNum(command, 3, argSize);
                 }
-                min = NumberUtils.toDouble(arguments.get(1));
+                min = NumberUtils.parseDouble(arguments.get(1));
                 if (Objects.isNull(min)) {
                     return ErrorResponse.errorInvalidNumber();
                 }
-                max = NumberUtils.toDouble(arguments.get(2));
+                max = NumberUtils.parseDouble(arguments.get(2));
                 if (Objects.isNull(max)) {
                     return ErrorResponse.errorInvalidNumber();
                 }

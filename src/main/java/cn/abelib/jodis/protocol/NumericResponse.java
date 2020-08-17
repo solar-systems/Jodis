@@ -41,7 +41,7 @@ public class NumericResponse implements Response{
 
     @Override
     public String toRespString() {
-        return ProtocolConstant.INTEGER_NUMBER_PREFiX + this.number + StringUtils.CLRF;
+        return ProtocolConstant.INTEGER_NUMBER_PREFIX + this.number + StringUtils.CLRF;
     }
 
     @Override

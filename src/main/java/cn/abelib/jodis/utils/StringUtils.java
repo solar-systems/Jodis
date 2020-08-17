@@ -9,6 +9,8 @@ import java.util.Objects;
 public class StringUtils {
     private StringUtils(){}
 
+    public static final String STAR = "*";
+
     public static final String SPACE = " ";
 
     public static String EMPTY = "";

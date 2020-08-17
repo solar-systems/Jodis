@@ -24,9 +24,6 @@ public class StringExecutorTest {
         stringExecutor = new StringExecutor(jodisDb);
     }
 
-    /**
-     * todo
-     */
     @Test
     public void executeTest() {
         Request request1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("hello", "world"));
@@ -36,5 +33,9 @@ public class StringExecutorTest {
         Request request2 = new Request(ProtocolConstant.STRING_GET, Lists.newArrayList("hello"));
         Response response2 = stringExecutor.execute(request2);
         System.err.println(response2.toRespString());
+
+        Request request3 = new Request(ProtocolConstant.STRING_STRLEN, Lists.newArrayList("hello"));
+        Response response3 = stringExecutor.execute(request3);
+        System.err.println(response3.toRespString());
     }
 }

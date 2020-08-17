@@ -24,17 +24,18 @@ public class ListExecutorTest {
         listExecutor = new ListExecutor(jodisDb);
     }
 
-    /**
-     * todo
-     */
     @Test
     public void executeTest() {
-        Request request1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("hello", "world"));
+        Request request1 = new Request(ProtocolConstant.LIST_LPUSH, Lists.newArrayList("hello", "world"));
         Response response1 = listExecutor.execute(request1);
         System.err.println(response1.toRespString());
 
-        Request request2 = new Request(ProtocolConstant.STRING_GET, Lists.newArrayList("hello"));
+        Request request2 = new Request(ProtocolConstant.LIST_LPUSH, Lists.newArrayList("hello", "Jodis"));
         Response response2 = listExecutor.execute(request2);
         System.err.println(response2.toRespString());
+
+        Request request3 = new Request(ProtocolConstant.LIST_LRANGE, Lists.newArrayList("hello", "0", "1"));
+        Response response3 = listExecutor.execute(request3);
+        System.err.println(response3.toRespString());
     }
 }

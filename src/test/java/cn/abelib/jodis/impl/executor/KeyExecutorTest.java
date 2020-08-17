@@ -1,7 +1,10 @@
 package cn.abelib.jodis.impl.executor;
 
 import cn.abelib.jodis.impl.JodisDb;
+import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
+import cn.abelib.jodis.protocol.Response;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,12 +24,14 @@ public class KeyExecutorTest {
         keyExecutor = new KeyExecutor(jodisDb);
     }
 
-    /**
-     * todo
-     */
     @Test
     public void executeTest() {
-        Request request = new Request();
-        keyExecutor.execute(request);
+        Request request1 = new Request(ProtocolConstant.KEY_EXISTS, Lists.newArrayList("hello"));
+        Response response1 = keyExecutor.execute(request1);
+        System.err.println(response1.toRespString());
+
+        Request request2 = new Request(ProtocolConstant.KEY_KEYS, Lists.newArrayList("hello"));
+        Response response2 = keyExecutor.execute(request2);
+        System.err.println(response2.toRespString());
     }
 }
