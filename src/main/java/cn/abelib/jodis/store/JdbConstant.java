@@ -1,4 +1,4 @@
-package cn.abelib.jodis.log;
+package cn.abelib.jodis.store;
 
 /**
  * @Author: abel.huang

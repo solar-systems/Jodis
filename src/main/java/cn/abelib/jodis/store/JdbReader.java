@@ -1,4 +1,4 @@
-package cn.abelib.jodis.log;
+package cn.abelib.jodis.store;
 
 import cn.abelib.jodis.impl.*;
 import cn.abelib.jodis.impl.SkipList;

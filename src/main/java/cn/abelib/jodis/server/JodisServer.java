@@ -1,8 +1,8 @@
 package cn.abelib.jodis.server;
 
 import cn.abelib.jodis.impl.JodisDb;
-import cn.abelib.jodis.network.SocketServer;
-import cn.abelib.jodis.protocol.JodisHandler;
+import cn.abelib.jodis.remoting.Server;
+import cn.abelib.jodis.remoting.ServerFactory;
 import cn.abelib.jodis.utils.Logger;
 import com.google.common.base.Stopwatch;
 
@@ -20,7 +20,7 @@ public class JodisServer implements Closeable {
     private JodisConfig jodisConfig;
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     private AtomicBoolean isShuttingDown = new AtomicBoolean(false);
-    private SocketServer socketServer;
+    private Server server;
     private JodisDb jodisDb;
 
     public JodisServer(JodisConfig jodisConfig) {
@@ -31,9 +31,9 @@ public class JodisServer implements Closeable {
         try {
             Stopwatch stopwatch = Stopwatch.createStarted();
             jodisDb = new JodisDb(jodisConfig);
-            JodisHandler jodisHandler = new JodisHandler(jodisDb);
-            socketServer = new SocketServer(jodisHandler, jodisConfig);
-            socketServer.startup();
+            // 使用工厂创建服务器，支持NIO和Netty两种实现
+            server = ServerFactory.createServer(jodisDb, jodisConfig);
+            server.startup();
             logger.info("Jodis server started cost {}", stopwatch.stop().toString());
         } catch (Exception e) {
             logger.error("========================================");
@@ -51,8 +51,8 @@ public class JodisServer implements Closeable {
 
         logger.info("Shutting down Jodis server...");
         try {
-            if (socketServer != null) {
-                socketServer.close();
+            if (server != null) {
+                server.close();
             }
 
         } catch (Exception e) {

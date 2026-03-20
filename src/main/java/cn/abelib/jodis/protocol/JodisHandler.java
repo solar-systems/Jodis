@@ -1,9 +1,9 @@
 package cn.abelib.jodis.protocol;
 
 import cn.abelib.jodis.impl.JodisDb;
-import cn.abelib.jodis.network.Receive;
-import cn.abelib.jodis.network.RequestHandler;
-import cn.abelib.jodis.network.Send;
+import cn.abelib.jodis.remoting.Receive;
+import cn.abelib.jodis.remoting.RequestHandler;
+import cn.abelib.jodis.remoting.Send;
 import cn.abelib.jodis.utils.ByteUtils;
 
 import java.io.IOException;

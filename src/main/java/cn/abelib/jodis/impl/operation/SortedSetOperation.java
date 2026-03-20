@@ -5,6 +5,8 @@ import cn.abelib.jodis.impl.JodisObject;
 import cn.abelib.jodis.impl.JodisSortedSet;
 import cn.abelib.jodis.impl.SkipList;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -142,5 +144,44 @@ public class SortedSetOperation extends KeyOperation {
             delete(key);
         }
         return 1;
+    }
+
+    /**
+     * ZRANGE - 返回指定排名范围内的所有成员
+     * @param key 有序集合名
+     * @param start 起始排名（包含）
+     * @param end 结束排名（包含）
+     * @return 成员列表
+     */
+    public List<String> zRange(String key, long start, long end) {
+        SkipList skipList = getSkipList(key);
+        if (Objects.isNull(skipList) || skipList.size() == 0) {
+            return new ArrayList<>();
+        }
+        
+        int size = skipList.size();
+        // 处理负数索引
+        if (start < 0) {
+            start = size + start;
+        }
+        if (end < 0) {
+            end = size + end;
+        }
+        
+        // 确保索引在有效范围内
+        if (start < 0) {
+            start = 0;
+        }
+        if (end >= size) {
+            end = size - 1;
+        }
+        
+        // 如果 start > end，返回空列表
+        if (start > end) {
+            return new ArrayList<>();
+        }
+        
+        List<String> allValues = skipList.values();
+        return allValues.subList((int)start, (int)end + 1);
     }
 }

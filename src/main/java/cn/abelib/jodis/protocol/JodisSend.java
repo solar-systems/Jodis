@@ -1,6 +1,6 @@
 package cn.abelib.jodis.protocol;
 
-import cn.abelib.jodis.network.Send;
+import cn.abelib.jodis.remoting.Send;
 import cn.abelib.jodis.utils.ByteUtils;
 import cn.abelib.jodis.utils.Logger;
 

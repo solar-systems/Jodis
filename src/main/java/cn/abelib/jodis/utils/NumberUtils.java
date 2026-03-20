@@ -65,4 +65,19 @@ public class NumberUtils {
         }
         return ans;
     }
+
+    /**
+     * @param num
+     * @return
+     */
+    public static Long parseLong(String num) {
+        Long ans;
+        try {
+            ans = Long.parseLong(num);
+        }catch (NumberFormatException e) {
+            // ignore
+            ans = null;
+        }
+        return ans;
+    }
 }

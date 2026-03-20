@@ -90,6 +90,21 @@ public class SortedSetExecutor implements Executor {
                 num = sortedSetOperation.zRemove(key,arguments.get(1));
                 return NumericResponse.numericResponse(num);
 
+            case ProtocolConstant.ZSET_ZRANGE:
+                if (argSize != 3) {
+                    return ErrorResponse.errorArgsNum(command, 3, argSize);
+                }
+                Long start = NumberUtils.parseLong(arguments.get(1));
+                if (Objects.isNull(start)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                Long end = NumberUtils.parseLong(arguments.get(2));
+                if (Objects.isNull(end)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                List<String> rangeMembers = sortedSetOperation.zRange(key, start, end);
+                return ListResponse.stringListResponse(rangeMembers);
+
             default:
                 break;
         }

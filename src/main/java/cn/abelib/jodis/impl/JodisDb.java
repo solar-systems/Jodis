@@ -1,9 +1,9 @@
 package cn.abelib.jodis.impl;
 
-import cn.abelib.jodis.log.WalReader;
-import cn.abelib.jodis.log.WalWriter;
-import cn.abelib.jodis.log.JdbReader;
-import cn.abelib.jodis.log.JdbWriter;
+import cn.abelib.jodis.store.WalReader;
+import cn.abelib.jodis.store.WalWriter;
+import cn.abelib.jodis.store.JdbReader;
+import cn.abelib.jodis.store.JdbWriter;
 import cn.abelib.jodis.protocol.*;
 import cn.abelib.jodis.impl.executor.ExecutorFactory;
 import cn.abelib.jodis.server.JodisConfig;
