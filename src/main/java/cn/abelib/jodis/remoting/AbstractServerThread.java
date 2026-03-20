@@ -1,4 +1,4 @@
-package cn.abelib.jodis.network;
+package cn.abelib.jodis.remoting;
 
 import cn.abelib.jodis.utils.Closeables;
 import cn.abelib.jodis.utils.Logger;

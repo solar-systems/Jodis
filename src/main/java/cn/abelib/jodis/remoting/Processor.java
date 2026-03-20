@@ -1,4 +1,4 @@
-package cn.abelib.jodis.network;
+package cn.abelib.jodis.remoting;
 
 import cn.abelib.jodis.protocol.JodisReceive;
 import cn.abelib.jodis.server.JodisConfig;

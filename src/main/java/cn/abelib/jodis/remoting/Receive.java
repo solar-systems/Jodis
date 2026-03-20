@@ -1,4 +1,4 @@
-package cn.abelib.jodis.network;
+package cn.abelib.jodis.remoting;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;

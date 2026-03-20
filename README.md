@@ -1,55 +1,480 @@
-# Jodis(Java Object Dictionary Server)
-Jodis是一个基于内存的NoSQL键值数据库，支持独立部署和嵌入式使用。
+# Jodis - Java Object Dictionary Server
 
-## Overview
-### 内存k-v数据库
-数据读写基于内存。
+Jodis 是一个高性能的基于内存的 NoSQL 键值数据库，采用 Java 开发，支持独立部署和嵌入式使用。兼容 Redis RESP2 协议，提供丰富的数据结构和持久化能力。
 
-### 支持多种数据结构
-1. [JodisString](docs/JodisString.md)
-用于存储普通的字符串，底层基于java.lang.String。
-2. [JodisList](docs/JodisList.md)
-列表对象，底层基于java.util.List;
-3. [JodisHash](docs/JodisHash.md)
-哈希表结构，底层基于java.util.Map;
-4. [JodisSet](docs/JodisSet.md)
-集合结构，底层基于java.util.Set;
-5. [JodisSortedSet](docs/JodisSortedSet.md)
-有序集合结构，底层基于java.util.Map和跳跃表。
+[![Build Status](https://travis-ci.org/abel-huang/Jodis.svg?branch=master)](https://travis-ci.org/abel-huang/Jodis)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
-### 单线程Reactor服务器
-同时支持多个连接，命令执行为单线程。
+## 📖 目录
 
-### 兼容Redis RESP2协议
-兼容大部分Redis命令，具体支持的命令如下：
+- [系统架构](#-系统架构)
+- [核心功能](#-核心功能)
+- [使用方式](#-使用方式)
+- [底层实现](#-底层实现)
+- [性能特点](#-性能特点)
+- [快速开始](#-快速开始)
+- [文档](#-文档)
 
-SERVER: [PING, FLUSHDB, DBSIZE](docs/JodisString.md)
+---
 
-KEY: [DEL, TYPE, EXISTS, KEYS, RANDOMKEY, RENAME, RENAMENX, EXPIRE, EXPIREAT, TTL](docs/JodisKey.md)
+## 🏗️ 系统架构
 
-JODIS_STRING: [GET, SET, GETSET, GETRANGE, MGET, MSET, SETEX, SETNX, SETRANGE, STRLEN, INCR, INCRBY, INCRBYFLOAT, DECR, DECRBY, APPEND](docs/JodisString.md)
+### 整体架构图
 
-JODIS_LIST: [LINDEX, LINSERT, LPOP, LPUSH, LRANGE, LSET, RPOP,  RPUSH](docs/JodisList.md)
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Client Layer                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │Java Client  │  │Redis CLI    │  │Other Clients│     │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
+└─────────┼────────────────┼────────────────┼────────────┘
+          │                │                │
+          └────────────────┴────────────────┘
+                   RESP Protocol (TCP)
+                         │
+┌────────────────────────▼─────────────────────────────────┐
+│                    Network Layer                          │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │         Netty Server (NIO Reactor)              │    │
+│  │  - LengthFieldBasedFrameDecoder                 │    │
+│  │  - LengthFieldPrepender                         │    │
+│  │  - RequestHandler                               │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────┐
+│                   Protocol Layer                          │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │            RESP Parser & Handler                │    │
+│  │  - Request 解析                                  │    │
+│  │  - Response 编码                                 │    │
+│  │  - 错误处理                                      │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────┐
+│                  Command Executor Layer                   │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  Executor (按数据类型分类)                       │    │
+│  │  - StringExecutor    - HashExecutor             │    │
+│  │  - ListExecutor      - SetExecutor              │    │
+│  │  - SortedSetExecutor - KeyExecutor              │    │
+│  │  - ServerExecutor                                │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────┐
+│                   Storage Layer                           │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │              JodisDb (内存存储)                   │    │
+│  │  - ConcurrentHashMap 存储数据                     │    │
+│  │  - ExpireObject 过期时间管理                     │    │
+│  │  - SkipList 有序集合（跳跃表）                    │    │
+│  └─────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────┐
+│                 Persistence Layer                         │
+│  ┌──────────────┐         ┌──────────────┐              │
+│  │   WAL Log    │         │   JDB Dump   │              │
+│  │ (预写日志)    │         │ (数据快照)    │              │
+│  │ WalWriter    │         │ JdbWriter    │              │
+│  │ WalReader    │         │ JdbReader    │              │
+│  └──────────────┘         └──────────────┘              │
+└─────────────────────────────────────────────────────────┘
+```
 
-JODIS_HASH: [HDEL, HEXISTS, HGET, HGETALL, HINCRBY, HINCRBYFLOAT, HKEYS, HVALS,, HLEN, HMGET, HMSET, HSETNX, HSCAN](docs/JodisHash.md)
+### 架构分层说明
 
-JODIS_ZSE： [ZADD, ZCARD, ZCOUNT, ZSCORE, ZREM](docs/JodisSortedSet.md)
+1. **客户端层**：支持 Java 客户端、Redis CLI 等任何兼容 RESP 协议的客户端
+2. **网络层**：基于 Netty 的 NIO Reactor 模型，高性能异步 IO
+3. **协议层**：完整实现 RESP2 协议的编解码
+4. **命令执行层**：按数据类型划分的 Executor，职责清晰
+5. **存储层**：纯内存存储，ConcurrentHashMap + 自定义数据结构
+6. **持久化层**：WAL 日志 + JDB 快照双重保障
 
-### 磁盘持久化
-1. WAL日志
-类似于Redis的AOF.
-2. JDB二进制Dump
-类似于Redis的RDB。
+---
 
+## ✨ 核心功能
 
-## TODO List
-1. LRU；
-2. TTL；
-3. IO优化；
-4. WAL rewrite后台任务和JDB后台任务；
-5. 代码完善优化，持续重构，完善单元测试，JMH测试；
-6. 文档和Example编写;
-7. Docker支持。
+### 1. 丰富的数据结构
 
+| 数据类型 | 说明 | 底层实现 |
+|---------|------|----------|
+| **String** | 字符串、数字、二进制数据 | `java.lang.String` |
+| **List** | 双向链表，支持两端操作 | `java.util.LinkedList` |
+| **Hash** | 哈希表，适合存储对象 | `java.util.HashMap` |
+| **Set** | 无序去重集合 | `java.util.HashSet` |
+| **SortedSet** | 有序集合，按分数排序 | `TreeMap` + `SkipList` |
 
+### 2. 完整的命令支持
 
+#### Server 命令
+- `PING` - 连接测试
+- `FLUSHDB` - 清空数据库
+- `DBSIZE` - 获取键数量
+
+#### Key 命令
+- `DEL`, `EXISTS`, `TYPE` - 基本操作
+- `EXPIRE`, `EXPIREAT`, `TTL` - 过期时间
+- `KEYS`, `RANDOMKEY` - 键查询
+- `RENAME`, `RENAMENX` - 重命名
+
+#### String 命令
+- `GET`, `SET`, `GETSET` - 基本操作
+- `MGET`, `MSET` - 批量操作
+- `INCR`, `DECR`, `INCRBY`, `DECRBY` - 自增自减
+- `STRLEN`, `APPEND`, `GETRANGE`, `SETRANGE` - 字符串操作
+- `SETEX`, `SETNX` - 条件设置
+
+#### List 命令
+- `LPUSH`, `RPUSH` - 插入元素
+- `LPOP`, `RPOP` - 弹出元素
+- `LRANGE`, `LINDEX`, `LSET` - 查询操作
+- `LINSERT` - 插入操作
+
+#### Hash 命令
+- `HSET`, `HGET`, `HMSET`, `HMGET` - 基本操作
+- `HGETALL`, `HKEYS`, `HVALS` - 全量查询
+- `HDEL`, `HEXISTS` - 删除检查
+- `HINCRBY`, `HINCRBYFLOAT` - 增量操作
+- `HLEN`, `HSCAN` - 统计迭代
+
+#### SortedSet 命令
+- `ZADD`, `ZREM` - 添加删除
+- `ZRANGE`, `ZCARD`, `ZCOUNT` - 范围统计
+- `ZSCORE`, `ZRANK` - 分数排名
+
+### 3. 数据持久化
+
+#### WAL (Write-Ahead Log)
+- **机制**：所有写操作先记录日志，再更新内存
+- **优势**：故障恢复，数据不丢失
+- **配置**：自动重写，避免文件过大
+
+#### JDB (Jodis DataBase Dump)
+- **机制**：定期生成数据快照
+- **格式**：二进制压缩存储
+- **恢复**：启动时加载，快速恢复
+
+### 4. 灵活部署模式
+
+#### 独立服务器模式
+```bash
+java -cp jodis.jar cn.abelib.jodis.Jodis conf/jodis.properties
+```
+
+#### 嵌入式模式
+```java
+EmbaddedJodis jodis = EmbaddedJodis.start("conf/jodis.properties");
+Response response = jodis.execute(new Request("GET", "key"));
+```
+
+---
+
+## 🚀 使用方式
+
+### 1. 启动服务器
+
+```bash
+# 克隆项目
+git clone https://github.com/abel-huang/Jodis.git
+cd Jodis
+
+# 编译
+mvn clean package -DskipTests
+
+# 启动服务器
+java -cp target/classes:target/test-classes:$(cat .classpath.deps) \
+    cn.abelib.jodis.Jodis conf/jodis.properties
+```
+
+### 2. 使用 Java 客户端
+
+```java
+import cn.abelib.jodis.client.JodisClient;
+import cn.abelib.jodis.client.JodisClientConfig;
+
+public class MyApp {
+    public static void main(String[] args) throws Exception {
+        try (JodisClient client = new JodisClient("localhost", 6059)) {
+            client.connect();
+            
+            // String 操作
+            client.set("name", "Jodis");
+            String name = client.get("name");
+            System.out.println(name); // 输出：Jodis
+            
+            // Hash 操作
+            client.hset("user:1", "name", "Alice");
+            client.hset("user:1", "age", "25");
+            
+            // List 操作
+            client.lpush("mylist", "item1", "item2", "item3");
+            
+            // 关闭连接
+            client.close();
+        }
+    }
+}
+```
+
+### 3. 使用 Redis CLI
+
+```bash
+# 安装 redis-cli
+redis-cli -h localhost -p 6059
+
+# 测试
+127.0.0.1:6059> PING
+PONG
+
+127.0.0.1:6059> SET greeting "Hello, Jodis!"
+OK
+
+127.0.0.1:6059> GET greeting
+"Hello, Jodis!"
+
+127.0.0.1:6059> LPUSH mylist item1 item2 item3
+(integer) 3
+
+127.0.0.1:6059> LRANGE mylist 0 -1
+1) "item3"
+2) "item2"
+3) "item1"
+```
+
+### 4. 运行示例程序
+
+```bash
+# 运行客户端示例
+java -cp target/classes:target/test-classes:$(cat .classpath.deps) \
+    cn.abelib.jodis.example.JodisClientExample
+```
+
+---
+
+## 🔧 底层实现
+
+### 1. 网络通信 - Netty NIO
+
+```java
+// NettySocketServer.java
+pipeline.addLast(new LengthFieldBasedFrameDecoder(
+    config.getMaxRequestSize() * 1024, 0, 4, 0, 4));
+pipeline.addLast(new LengthFieldPrepender(4));
+pipeline.addLast(new NettyServerHandler());
+```
+
+**特点**：
+- 4 字节长度前缀 + RESP 协议体
+- 非阻塞 IO，单线程 Reactor
+- 自动拆包/粘包处理
+
+### 2. RESP 协议实现
+
+**请求格式**：
+```
+*3\r
+$3\r
+SET\r
+$4\r
+name\r
+$5\r
+Jodis\r
+
+```
+
+**响应类型**：
+- `+` Simple String
+- `-` Error
+- `:` Integer
+- `$` Bulk String
+- `*` Array
+
+### 3. 内存存储结构
+
+```java
+// JodisDb.java
+private final ConcurrentHashMap<String, ExpireObject> data = new ConcurrentHashMap<>();
+
+// ExpireObject.java
+public class ExpireObject {
+    private Object value;      // 实际数据
+    private long expireTime;   // 过期时间戳
+}
+```
+
+### 4. 跳跃表实现（SortedSet）
+
+```java
+// JodisSortedSet.java
+public class JodisSortedSet {
+    private Map<String, Double> holder;  // member -> score 映射
+    private SkipList skipList;           // 按 score 排序的跳跃表
+}
+
+// SkipList.java
+public class SkipList {
+    private SkipNode head;      // 头节点
+    private int maxLevel;       // 最大层数
+    private int currentMaxLevel; // 当前使用层数
+    private int length;         // 节点数量
+}
+```
+
+**跳跃表特点**：
+- 平均 O(log n) 查找复杂度
+- 支持范围查询
+- 随机层数，平衡性好
+
+### 5. WAL 日志机制
+
+**写入流程**：
+```
+客户端请求 → 追加 WAL → 更新内存 → 返回响应
+```
+
+**日志格式**：
+```
+[时间戳][操作类型][Key][Value]...
+```
+
+**恢复流程**：
+```
+启动 → 加载 JDB → 重放 WAL → 恢复完成
+```
+
+### 6. 命令执行框架
+
+```java
+// Executor 接口
+public interface Executor {
+    Response execute(Request request);
+}
+
+// StringExecutor 示例
+public class StringExecutor implements Executor {
+    @Override
+    public Response execute(Request request) {
+        String command = request.getCommand();
+        switch (command) {
+            case "SET":
+                return handleSet(request);
+            case "GET":
+                return handleGet(request);
+            // ... 其他命令
+        }
+    }
+}
+```
+
+---
+
+## ⚡ 性能特点
+
+### 设计优势
+
+1. **纯内存操作** - 微秒级响应时间
+2. **单线程模型** - 无线程切换开销，无锁竞争
+3. **零拷贝** - 直接内存操作，减少数据复制
+4. **批量优化** - MSET/MGET 减少网络往返
+5. **惰性删除** - 过期键访问时删除，降低 CPU 开销
+
+### 适用场景
+
+✅ **适合**：
+- 缓存层
+- 会话存储
+- 实时排行榜
+- 消息队列
+- 计数器
+
+❌ **不适合**：
+- 大数据量（受内存限制）
+- 高并发写入（单线程瓶颈）
+- 复杂查询（仅支持简单 KV）
+
+---
+
+## 🎯 快速开始
+
+### 环境要求
+- JDK 8+
+- Maven 3.x
+
+### 配置文件
+
+```properties
+# conf/jodis.properties
+jodis.port=6059
+log.dir=log/
+log.jdb=default.jdb
+log.wal=default.wal
+log.wal.rewrite.size=64 * 1024 * 1024
+log.reload.mode=2
+server.max.request=1024
+server.max.concurrency=64
+server.type=nio
+```
+
+### 运行测试
+
+```bash
+# 单元测试
+mvn test
+
+# 客户端测试
+mvn test -Dtest=JodisClientTest
+```
+
+---
+
+## 📚 文档
+
+### 核心文档
+- [JodisString](docs/JodisString.md) - 字符串操作
+- [JodisList](docs/JodisList.md) - 列表操作
+- [JodisHash](docs/JodisHash.md) - 哈希表操作
+- [JodisSet](docs/JodisSet.md) - 集合操作
+- [JodisSortedSet](docs/JodisSortedSet.md) - 有序集合
+- [JodisKey](docs/JodisKey.md) - 键操作
+- [JodisServer](docs/JodisServer.md) - 服务器命令
+
+### 高级主题
+- [数据库快照](docs/JodisDataBaseSnapshot.md) - 持久化机制
+- [WAL 日志](docs/WriteAheadLog.md) - 预写日志原理
+- [Java 客户端](docs/JodisClient.md) - 客户端使用指南
+- [快速开始](docs/JodisClientQuickStart.md) - 快速入门
+
+---
+
+## 📋 TODO List
+
+- [ ] LRU 淘汰算法
+- [ ] TTL 精确过期控制
+- [ ] IO 多路复用优化
+- [ ] WAL Rewrite 后台任务
+- [ ] JDB 定时快照任务
+- [ ] 代码优化和单元测试完善
+- [ ] JMH 性能基准测试
+- [ ] Docker 镜像支持
+- [ ] 集群模式探索
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
+
+MIT License
+
+## 👤 作者
+
+Abel Huang (abel.huang)
+
+---
+
+**Happy Coding with Jodis! 🎉**

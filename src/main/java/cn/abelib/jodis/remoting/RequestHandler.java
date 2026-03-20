@@ -1,4 +1,4 @@
-package cn.abelib.jodis.network;
+package cn.abelib.jodis.remoting;
 
 /**
  * @Author: abel.huang

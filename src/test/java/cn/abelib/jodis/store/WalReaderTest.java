@@ -1,4 +1,4 @@
-package cn.abelib.jodis.log;
+package cn.abelib.jodis.store;
 
 import org.junit.Before;
 import org.junit.Test;

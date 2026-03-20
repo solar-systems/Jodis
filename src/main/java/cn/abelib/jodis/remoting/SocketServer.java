@@ -1,4 +1,4 @@
-package cn.abelib.jodis.network;
+package cn.abelib.jodis.remoting;
 
 import cn.abelib.jodis.protocol.JodisHandler;
 import cn.abelib.jodis.server.JodisConfig;
@@ -6,13 +6,13 @@ import cn.abelib.jodis.utils.Closeables;
 import cn.abelib.jodis.utils.Logger;
 import cn.abelib.jodis.utils.ThreadUtils;
 
-import java.io.Closeable;
-
 /**
+ * 基于Java NIO Socket的服务器实现
+ * 
  * @Author: abel.huang
  * @Date: 2020-07-30 22:40
  */
-public class SocketServer implements Closeable {
+public class SocketServer implements Server {
     private final Logger logger = Logger.getLogger(SocketServer.class);
 
     private RequestHandler requestHandler;
@@ -25,9 +25,15 @@ public class SocketServer implements Closeable {
         this.accepter = new Accepter(jodisConfig.getPort(), processor);
     }
 
+    @Override
     public void startup() throws InterruptedException {
         ThreadUtils.newThread("jodis-processor", processor, false).start();
         ThreadUtils.newThread("jodis-acceptor", accepter, false).start();
+        accepter.awaitStartup();
+    }
+
+    @Override
+    public void awaitStartup() throws InterruptedException {
         accepter.awaitStartup();
     }
 

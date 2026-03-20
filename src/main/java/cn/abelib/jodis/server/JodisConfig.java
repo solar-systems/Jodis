@@ -1,5 +1,6 @@
 package cn.abelib.jodis.server;
 
+import cn.abelib.jodis.remoting.ServerFactory;
 import cn.abelib.jodis.utils.PropertiesUtils;
 import cn.abelib.jodis.utils.StringUtils;
 
@@ -86,5 +87,15 @@ public class JodisConfig {
             throw new ConfigurationException(StringUtils.format("Invalid concurrency {}, concurrency must in [8, 1024]", concurrency));
         }
         return concurrency;
+    }
+
+    /**
+     * 获取服务器类型配置
+     * 支持: nio (Java NIO Socket) 或 netty (Netty)
+     * @return 服务器类型
+     */
+    public ServerFactory.ServerType getServerType() {
+        String serverType = PropertiesUtils.getString(props, "server.type", "nio");
+        return ServerFactory.ServerType.fromString(serverType);
     }
 }
