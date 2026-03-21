@@ -5,6 +5,7 @@ import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,10 +29,10 @@ public class KeyExecutorTest {
     public void executeTest() {
         Request request1 = new Request(ProtocolConstant.KEY_EXISTS, Lists.newArrayList("hello"));
         Response response1 = keyExecutor.execute(request1);
-        System.err.println(response1.toRespString());
+        Assert.assertNotNull(response1);
 
         Request request2 = new Request(ProtocolConstant.KEY_KEYS, Lists.newArrayList("hello"));
         Response response2 = keyExecutor.execute(request2);
-        System.err.println(response2.toRespString());
+        Assert.assertNotNull(response2);
     }
 }

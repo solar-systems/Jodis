@@ -1,5 +1,6 @@
 package cn.abelib.jodis.utils;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -11,6 +12,6 @@ public class StringUtilsTest {
     @Test
     public void formatTest() {
         String str = StringUtils.format("Jodis{}Jodis{}Jodis", "-", "-");
-        System.err.println(str);
+        Assert.assertEquals("Jodis-Jodis-Jodis", str);
     }
 }

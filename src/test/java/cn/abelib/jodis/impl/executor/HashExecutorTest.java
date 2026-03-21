@@ -5,6 +5,7 @@ import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,18 +29,18 @@ public class HashExecutorTest {
     public void executeTest() {
         Request request1 = new Request(ProtocolConstant.HASH_HSET, Lists.newArrayList("hello", "hello1", "world1"));
         Response response1 = hashExecutor.execute(request1);
-        System.err.println(response1.toRespString());
+        Assert.assertNotNull(response1);
 
         Request request2 = new Request(ProtocolConstant.HASH_HSET, Lists.newArrayList("hello", "hello2", "world2"));
         Response response2 = hashExecutor.execute(request2);
-        System.err.println(response2.toRespString());
+        Assert.assertNotNull(response2);
 
         Request request3 = new Request(ProtocolConstant.HASH_HGETALL, Lists.newArrayList("hello"));
         Response response3 = hashExecutor.execute(request3);
-        System.err.println(response3.toRespString());
+        Assert.assertNotNull(response3);
 
         Request request4 = new Request(ProtocolConstant.HASH_HVALS, Lists.newArrayList("hello"));
         Response response4 = hashExecutor.execute(request4);
-        System.err.println(response4.toRespString());
+        Assert.assertNotNull(response4);
     }
 }

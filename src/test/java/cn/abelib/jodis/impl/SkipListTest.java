@@ -23,9 +23,7 @@ public class SkipListTest {
         skipList.add(3, "World");
         skipList.add(2, "Skip");
         skipList.add(4, "List");
-        Assert.assertSame(skipList.size(),4);
-
-        System.err.println(skipList.values());
+        Assert.assertEquals(4, skipList.size());
     }
 
     @Test
@@ -50,11 +48,11 @@ public class SkipListTest {
         skipList.add(4, "List");
 
         skipList.delete(4);
-        Assert.assertSame(skipList.size(),3);
+        Assert.assertEquals(3, skipList.size());
         Assert.assertNull(skipList.find(4));
 
         skipList.delete(3);
-        Assert.assertSame(skipList.size(),2);
+        Assert.assertEquals(2, skipList.size());
         Assert.assertNull(skipList.find(3));
     }
 

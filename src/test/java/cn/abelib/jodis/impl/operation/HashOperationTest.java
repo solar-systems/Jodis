@@ -29,17 +29,17 @@ public class HashOperationTest {
         Assert.assertTrue(hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1"));
         Assert.assertFalse(hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1"));
         System.err.println(hashOperation.getHash("jodis_key_1"));
-        Assert.assertSame(hashOperation.hashGet("jodis_key_1", "jodis_field_1"), "jodis_value_1");
-        Assert.assertSame(hashOperation.hashGet("jodis_key_1", "jodis_field_2"), StringUtils.NIL);
+        Assert.assertEquals(hashOperation.hashGet("jodis_key_1", "jodis_field_1"), "jodis_value_1");
+        Assert.assertEquals(StringUtils.NIL, hashOperation.hashGet("jodis_key_1", "jodis_field_2"));
     }
 
     @Test
     public void hashGetAllTest() {
-        Assert.assertSame(hashOperation.hashGetAll("jodis_key_1").size(), 0);
+        Assert.assertEquals(0, hashOperation.hashGetAll("jodis_key_1").size());
         hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1");
-        Assert.assertSame(hashOperation.hashGetAll("jodis_key_1").size(), 2);
+        Assert.assertEquals(2, hashOperation.hashGetAll("jodis_key_1").size());
         hashOperation.hashSet("jodis_key_1", "jodis_field_2", "jodis_value_2");
-        Assert.assertSame(hashOperation.hashGetAll("jodis_key_1").size(), 4);
+        Assert.assertEquals(4, hashOperation.hashGetAll("jodis_key_1").size());
     }
 
     @Test
@@ -51,10 +51,10 @@ public class HashOperationTest {
 
     @Test
     public void hashDeleteTest() {
-        Assert.assertSame(hashOperation.hashDelete("jodis_key_1", "jodis_field_1"), 0);
+        Assert.assertEquals(0, hashOperation.hashDelete("jodis_key_1", "jodis_field_1"));
         Assert.assertTrue(hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1"));
         Assert.assertTrue(hashOperation.hashExists("jodis_key_1", "jodis_field_1"));
-        Assert.assertSame(hashOperation.hashDelete("jodis_key_1", "jodis_field_1"), 1);
+        Assert.assertEquals(1, hashOperation.hashDelete("jodis_key_1", "jodis_field_1"));
         Assert.assertFalse(hashOperation.hashExists("jodis_key_1", "jodis_field_1"));
     }
 
@@ -64,7 +64,7 @@ public class HashOperationTest {
         hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1");
         hashOperation.hashSet("jodis_key_1", "jodis_field_2", "jodis_value_2");
         System.err.println(hashOperation.hashKeys("jodis_key_1"));
-        Assert.assertSame(hashOperation.hashKeys("jodis_key_1").size(), 2);
+        Assert.assertEquals(2, hashOperation.hashKeys("jodis_key_1").size());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class HashOperationTest {
         hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1");
         hashOperation.hashSet("jodis_key_1", "jodis_field_2", "jodis_value_2");
         System.err.println(hashOperation.hashValues("jodis_key_1"));
-        Assert.assertSame(hashOperation.hashValues("jodis_key_1").size(), 2);
+        Assert.assertEquals(2, hashOperation.hashValues("jodis_key_1").size());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class HashOperationTest {
         hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1");
         hashOperation.hashSet("jodis_key_1", "jodis_field_1", "jodis_value_1");
         hashOperation.hashSet("jodis_key_1", "jodis_field_2", "jodis_value_2");
-        Assert.assertSame(hashOperation.hashLen("jodis_key_1"), 2);
+        Assert.assertEquals(2, hashOperation.hashLen("jodis_key_1"));
     }
 
     @Test

@@ -5,6 +5,7 @@ import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,14 +29,14 @@ public class SortedSetExecutorTest {
     public void executeTest() {
         Request request1 = new Request(ProtocolConstant.ZSET_ZADD, Lists.newArrayList("hello", "0.1", "world"));
         Response response1 = sortedSetExecutor.execute(request1);
-        System.err.println(response1.toRespString());
+        Assert.assertNotNull(response1);
 
         Request request2 = new Request(ProtocolConstant.ZSET_ZSCORE, Lists.newArrayList("hello", "world"));
         Response response2 = sortedSetExecutor.execute(request2);
-        System.err.println(response2.toRespString());
+        Assert.assertNotNull(response2);
 
         Request request3 = new Request(ProtocolConstant.ZSET_ZCARD, Lists.newArrayList("hello"));
         Response response3 = sortedSetExecutor.execute(request3);
-        System.err.println(response3.toRespString());
+        Assert.assertNotNull(response3);
     }
 }

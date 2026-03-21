@@ -138,9 +138,9 @@ public class SkipList implements Iterable<KeyValue<Double, String>>{
                 }
             }
         }
-
-        // 更新currentMaxLevel
-        while (currentMaxLevel > 1 && head.next[currentMaxLevel] == null){
+    
+        // 更新 currentMaxLevel
+        while (currentMaxLevel > 1 && (currentMaxLevel >= DEFAULT_MAX_LEVEL || head.next[currentMaxLevel - 1] == null)){
             currentMaxLevel--;
         }
         length--;
@@ -160,9 +160,9 @@ public class SkipList implements Iterable<KeyValue<Double, String>>{
                 }
             }
         }
-
-        // 更新currentMaxLevel
-        while (currentMaxLevel > 1 && head.next[currentMaxLevel] == null){
+    
+        // 更新 currentMaxLevel
+        while (currentMaxLevel > 1 && (currentMaxLevel >= DEFAULT_MAX_LEVEL || head.next[currentMaxLevel - 1] == null)){
             currentMaxLevel--;
         }
         length--;

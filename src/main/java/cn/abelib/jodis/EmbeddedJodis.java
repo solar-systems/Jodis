@@ -18,16 +18,16 @@ import java.util.Properties;
  * @Date: 2020-08-09 15:53
  * Embedded Jodis
  */
-public class EmbaddedJodis {
+public class EmbeddedJodis {
     static Logger log = Logger.getLogger(Jodis.class);
 
     private JodisDb jodisDb;
 
-    EmbaddedJodis(JodisConfig jodisConfig) throws IOException {
+    EmbeddedJodis(JodisConfig jodisConfig) throws IOException {
         jodisDb = new JodisDb(jodisConfig);
     }
 
-    public static EmbaddedJodis start(String propsFileName) throws IOException {
+    public static EmbeddedJodis start(String propsFileName) throws IOException {
         Path path = Paths.get(propsFileName);
         if (!Files.exists(path) || !Files.isRegularFile(path)) {
             log.error( "ERROR: EmbaddedJodis config file not exist => '{}', copy one from 'conf/jodis.properties' first.",
@@ -37,7 +37,7 @@ public class EmbaddedJodis {
 
         Properties  mainProperties = PropertiesUtils.loadProps(propsFileName);
         JodisConfig config = new JodisConfig(mainProperties);
-        return new EmbaddedJodis(config);
+        return new EmbeddedJodis(config);
     }
 
     public  Response execute(Request request) throws IOException {

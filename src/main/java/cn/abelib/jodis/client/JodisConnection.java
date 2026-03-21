@@ -173,6 +173,12 @@ public class JodisConnection implements AutoCloseable {
         
         // 提取实际数据
         String value = data.substring(firstCrLf + 2, firstCrLf + 2 + length);
+        
+        // 特殊处理：如果服务器返回 "nil" 字符串，当作 null 处理
+        if ("nil".equals(value)) {
+            return null;
+        }
+        
         return value;
     }
 
@@ -180,8 +186,48 @@ public class JodisConnection implements AutoCloseable {
      * 解析数组
      */
     private String parseArray(String data) {
-        // 简单实现，返回原始数据
-        return data;
+        // 找到第一个 \r\n
+        int firstCrLf = data.indexOf("\r\n");
+        if (firstCrLf == -1) {
+            throw new RuntimeException("Invalid array format");
+        }
+        
+        // 解析数组长度
+        int length = Integer.parseInt(data.substring(1, firstCrLf));
+        if (length == -1) {
+            return null; // null array
+        }
+        
+        // 解析数组元素
+        StringBuilder result = new StringBuilder();
+        result.append("[");
+        
+        int pos = firstCrLf + 2;
+        for (int i = 0; i < length; i++) {
+            // 读取 $ 符号
+            if (data.charAt(pos) != '$') {
+                throw new RuntimeException("Expected $ at position " + pos);
+            }
+            pos++;
+            
+            // 读取字符串长度
+            int nextCrLf = data.indexOf("\r\n", pos);
+            int strLen = Integer.parseInt(data.substring(pos, nextCrLf));
+            pos = nextCrLf + 2;
+            
+            // 读取字符串值
+            String value = data.substring(pos, pos + strLen);
+            result.append(value);
+            
+            if (i < length - 1) {
+                result.append(", ");
+            }
+            
+            pos += strLen + 2; // 跳过 \r\n
+        }
+        
+        result.append("]");
+        return result.toString();
     }
 
     /**
