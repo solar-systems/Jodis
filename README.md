@@ -2,7 +2,7 @@
 
 Jodis 是一个高性能的基于内存的 NoSQL 键值数据库，采用 Java 开发，支持独立部署和嵌入式使用。兼容 Redis RESP2 协议，提供丰富的数据结构和持久化能力。
 
-[![Build Status](https://travis-ci.org/abel-huang/Jodis.svg?branch=master)](https://travis-ci.org/abel-huang/Jodis)
+[![Java CI with Maven](https://github.com/abel-huang/Jodis/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/abel-huang/Jodis/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## 📖 目录
@@ -456,7 +456,7 @@ mvn test -Dtest=JodisClientTest
 - [ ] WAL Rewrite 后台任务
 - [ ] JDB 定时快照任务
 - [ ] 集群模式探索
-- [ ] 集成Github Action
+- [ ] 集成Github Actions
 - [ ] 代码优化和单元测试完善
 - [ ] JMH 性能基准测试
 - [ ] Docker 镜像支持
