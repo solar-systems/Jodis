@@ -6,8 +6,11 @@ import cn.abelib.jodis.impl.operation.HashOperation;
 import cn.abelib.jodis.protocol.*;
 import cn.abelib.jodis.utils.StringUtils;
 import cn.abelib.jodis.utils.NumberUtils;
+import cn.abelib.jodis.impl.executor.strategy.CommandStrategy;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -15,139 +18,233 @@ import java.util.Objects;
  * @Date: 2020-07-16 01:35
  */
 public class HashExecutor implements Executor {
-    private HashOperation hashOperation;
+    private final JodisDb jodisDb;
+    private final Map<String, CommandStrategy> strategies = new HashMap<>();
 
     public HashExecutor(JodisDb jodisDb) {
-        this.hashOperation = new HashOperation(jodisDb);
+        this.jodisDb = jodisDb;
+        registerStrategies();
     }
-
+    
+    /**
+     * 注册所有命令策略
+     */
+    private void registerStrategies() {
+        strategies.put(ProtocolConstant.HASH_HDEL, new HDelStrategy());
+        strategies.put(ProtocolConstant.HASH_HEXISTS, new HExistsStrategy());
+        strategies.put(ProtocolConstant.HASH_HGET, new HGetStrategy());
+        strategies.put(ProtocolConstant.HASH_HGETALL, new HGetAllStrategy());
+        strategies.put(ProtocolConstant.HASH_HINCRBY, new HIncrByStrategy());
+        strategies.put(ProtocolConstant.HASH_HINCRBYFLOAT, new HIncrByFloatStrategy());
+        strategies.put(ProtocolConstant.HASH_HKEYS, new HKeysStrategy());
+        strategies.put(ProtocolConstant.HASH_HVALS, new HValsStrategy());
+        strategies.put(ProtocolConstant.HASH_HLEN, new HLenStrategy());
+        strategies.put(ProtocolConstant.HASH_HSET, new HSetStrategy());
+        strategies.put(ProtocolConstant.HASH_HSETNX, new HSetNxStrategy());
+        strategies.put(ProtocolConstant.HASH_HMSET, new HMSetStrategy());
+        strategies.put(ProtocolConstant.HASH_HMGET, new HMGetStrategy());
+    }
+    
+    /**
+     * 执行命令
+     */
     @Override
     public Response execute(Request request) {
         String command = request.getCommand();
         List<String> arguments = request.getArgs();
         int argSize = arguments.size();
+        
+        // 1. 基础参数验证
         if (argSize < 1) {
             return ErrorResponse.errorArgsNum(command);
         }
+        
         String key = arguments.get(0);
         if (StringUtils.isEmpty(key)) {
             return ErrorResponse.errorArgsNum(command);
         }
+        
+        // 2. 类型检查
+        HashOperation hashOperation = new HashOperation(jodisDb);
         String type = hashOperation.type(key);
-        // 类型不匹配
         if (!StringUtils.isEmpty(type) && !StringUtils.equals(type, KeyType.JODIS_HASH)) {
             return ErrorResponse.errorSyntax();
         }
-        Integer num;
-        Float numFloat;
-        boolean flag;
-        String res;
-        List<String> list;
-        switch (command) {
-            case ProtocolConstant.HASH_HDEL:
-                if (argSize != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                num = hashOperation.hashDelete(key, arguments.get(1));
-                return NumericResponse.numericResponse(num);
-
-            case ProtocolConstant.HASH_HEXISTS:
-                if (argSize != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                flag = hashOperation.hashExists(key, arguments.get(1));
-                return NumericResponse.numericResponse(flag ? 1 : 0);
-
-            case ProtocolConstant.HASH_HGET:
-                if (argSize != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                res = hashOperation.hashGet(key, arguments.get(1));
-                return SimpleResponse.simpleResponse(res);
-
-            case ProtocolConstant.HASH_HGETALL:
-                if (argSize != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                list = hashOperation.hashGetAll(key);
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.HASH_HINCRBY:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                num = NumberUtils.parseInt(arguments.get(2));
-                if (Objects.isNull(num)) {
-                    return ErrorResponse.errorInvalidNumber();
-                }
-                num = hashOperation.hashIncrementBy(key, arguments.get(1), num);
-                return NumericResponse.numericResponse(num);
-
-            case ProtocolConstant.HASH_HINCRBYFLOAT:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                numFloat = NumberUtils.parseFloat(arguments.get(2));
-                if (Objects.isNull(numFloat)) {
-                    return ErrorResponse.errorInvalidNumber();
-                }
-                numFloat = hashOperation.hashIncrementByFloat(key, arguments.get(1), numFloat);
-                return NumericResponse.numericResponse(numFloat);
-
-            case ProtocolConstant.HASH_HKEYS:
-                if (argSize != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                list = hashOperation.hashKeys(key);
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.HASH_HVALS:
-                if (argSize != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                list = hashOperation.hashValues(key);
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.HASH_HLEN:
-                if (argSize != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                num = hashOperation.hashLen(key);
-                return NumericResponse.numericResponse(num);
-
-            case ProtocolConstant.HASH_HSET:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                flag = hashOperation.hashSet(key, arguments.get(1), arguments.get(2));
-                return NumericResponse.numericResponse(flag ? 1 : 0);
-
-            case ProtocolConstant.HASH_HSETNX:
-                if (argSize != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                flag = hashOperation.hashSetIfNotExists(key, arguments.get(1), arguments.get(2));
-                return NumericResponse.numericResponse(flag ? 1 : 0);
-
-            case ProtocolConstant.HASH_HMSET:
-                if (argSize % 2 == 0) {
-                    return ErrorResponse.errorArgsNum(command);
-                }
-                list = arguments.subList(1, argSize);
-                hashOperation.hashMultiSet(key, list);
-                return SimpleResponse.ok();
-
-            case ProtocolConstant.HASH_HMGET:
-                if (argSize < 2) {
-                    return ErrorResponse.errorArgsNum(command);
-                }
-                list = arguments.subList(1, argSize);
-                list = hashOperation.hashMultiGet(key, list);
-                return ListResponse.stringListResponse(list);
-
-            default:
-                break;
+        
+        // 3. 查找并执行策略
+        CommandStrategy strategy = strategies.get(command);
+        if (strategy == null) {
+            return ErrorResponse.errorUnknownCmd(command);
         }
-        return ErrorResponse.errorCommon();
+        
+        return strategy.execute(jodisDb, arguments);
+    }
+    
+    // ==================== 内部策略类 ====================
+    
+    /**
+     * HDEL key field
+     */
+    private class HDelStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            Integer num = op.hashDelete(args.get(0), args.get(1));
+            return NumericResponse.numericResponse(num);
+        }
+    }
+    
+    /**
+     * HEXISTS key field
+     */
+    private class HExistsStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            boolean flag = op.hashExists(args.get(0), args.get(1));
+            return NumericResponse.numericResponse(flag ? 1 : 0);
+        }
+    }
+    
+    /**
+     * HGET key field
+     */
+    private class HGetStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            String res = op.hashGet(args.get(0), args.get(1));
+            return SimpleResponse.simpleResponse(res);
+        }
+    }
+    
+    /**
+     * HGETALL key
+     */
+    private class HGetAllStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            List<String> list = op.hashGetAll(args.get(0));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * HINCRBY key field increment
+     */
+    private class HIncrByStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            Integer num = NumberUtils.parseInt(args.get(2));
+            if (Objects.isNull(num)) {
+                return ErrorResponse.errorInvalidNumber();
+            }
+            HashOperation op = new HashOperation(db);
+            num = op.hashIncrementBy(args.get(0), args.get(1), num);
+            return NumericResponse.numericResponse(num);
+        }
+    }
+    
+    /**
+     * HINCRBYFLOAT key field increment
+     */
+    private class HIncrByFloatStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            Float numFloat = NumberUtils.parseFloat(args.get(2));
+            if (Objects.isNull(numFloat)) {
+                return ErrorResponse.errorInvalidNumber();
+            }
+            HashOperation op = new HashOperation(db);
+            numFloat = op.hashIncrementByFloat(args.get(0), args.get(1), numFloat);
+            return NumericResponse.numericResponse(numFloat);
+        }
+    }
+    
+    /**
+     * HKEYS key
+     */
+    private class HKeysStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            List<String> list = op.hashKeys(args.get(0));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * HVALS key
+     */
+    private class HValsStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            List<String> list = op.hashValues(args.get(0));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * HLEN key
+     */
+    private class HLenStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            Integer num = op.hashLen(args.get(0));
+            return NumericResponse.numericResponse(num);
+        }
+    }
+    
+    /**
+     * HSET key field value
+     */
+    private class HSetStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            boolean flag = op.hashSet(args.get(0), args.get(1), args.get(2));
+            return NumericResponse.numericResponse(flag ? 1 : 0);
+        }
+    }
+    
+    /**
+     * HSETNX key field value
+     */
+    private class HSetNxStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            boolean flag = op.hashSetIfNotExists(args.get(0), args.get(1), args.get(2));
+            return NumericResponse.numericResponse(flag ? 1 : 0);
+        }
+    }
+    
+    /**
+     * HMSET key field value [field value ...]
+     */
+    private class HMSetStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            List<String> list = args.subList(1, args.size());
+            op.hashMultiSet(args.get(0), list);
+            return SimpleResponse.ok();
+        }
+    }
+    
+    /**
+     * HMGET key field [field ...]
+     */
+    private class HMGetStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            HashOperation op = new HashOperation(db);
+            List<String> list = args.subList(1, args.size());
+            list = op.hashMultiGet(args.get(0), list);
+            return ListResponse.stringListResponse(list);
+        }
     }
 }
