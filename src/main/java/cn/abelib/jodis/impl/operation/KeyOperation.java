@@ -54,29 +54,81 @@ public class KeyOperation extends AbstractOperation {
 
     /**
      * Redis command: EXISTS
+     * 检查 key 是否存在且未过期
      * @param key
      * @return
      */
     public boolean exists(String key) {
-        return this.jodisDb.containsKey(key);
+        JodisObject obj = this.jodisDb.get(key);
+        if (obj == null) {
+            return false;
+        }
+        
+        // 检查是否过期
+        if (obj.ttl() > 0) {
+            long now = System.currentTimeMillis();
+            if (now >= obj.created() + obj.ttl()) {
+                // 已过期，删除并返回 false
+                this.jodisDb.remove(key);
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
-     * todo TTL
+     * Redis command: EXPIRE
+     * 为 key 设置以秒为单位的生存时间
      * @param key
-     * @return
+     * @param seconds 秒数
+     * @return 1 成功，0 失败
      */
-    public int expire(String key, long timestamp, TimeUnit unit) {
-        return 0;
+    public int expire(String key, long seconds, TimeUnit unit) {
+        JodisObject obj = this.jodisDb.get(key);
+        if (obj == null) {
+            return 0; // key 不存在
+        }
+        
+        // 将秒转换为毫秒
+        long ttlMillis = unit.toMillis(seconds);
+        if (ttlMillis <= 0) {
+            // TTL 为 0 或负数，立即删除 key
+            delete(key);
+            return 1;
+        }
+        
+        // 设置 TTL（保持原有的 created 时间）
+        obj.ttl(ttlMillis);
+        return 1;
     }
 
     /**
-     * todo TTL
+     * Redis command: EXPIREAT
+     * 为 key 设置以时间戳为单位的过期时间
      * @param key
-     * @return
+     * @param timestamp Unix 时间戳（秒）
+     * @return 1 成功，0 失败
      */
     public int expireAt(String key, long timestamp, TimeUnit unit) {
-        return 0;
+        JodisObject obj = this.jodisDb.get(key);
+        if (obj == null) {
+            return 0; // key 不存在
+        }
+        
+        // 将时间戳转换为毫秒
+        long timestampMillis = unit.toMillis(timestamp);
+        long now = System.currentTimeMillis();
+        
+        if (timestampMillis <= now) {
+            // 过期时间已过，立即删除 key
+            delete(key);
+            return 1;
+        }
+        
+        // 计算剩余的 TTL
+        long ttl = timestampMillis - now;
+        obj.ttl(ttl);
+        return 1;
     }
 
     /**
@@ -105,13 +157,34 @@ public class KeyOperation extends AbstractOperation {
     }
 
     /**
-     * todo
+     * Redis command: TTL
+     * 以秒为单位返回 key 的剩余生存时间
      * @param key
-     * @param unit
-     * @return
+     * @return 剩余秒数；key 不存在或已过期返回 -2；没有设置过期时间返回 -1
      */
-    public int ttl(String key, long timestamp, TimeUnit unit) {
-        return 0;
+    public int ttl(String key) {
+        JodisObject obj = this.jodisDb.get(key);
+        if (obj == null) {
+            return -2; // key 不存在
+        }
+        
+        // 检查是否设置了过期时间
+        if (obj.ttl() <= 0) {
+            return -1; // 没有设置过期时间
+        }
+        
+        // 计算剩余时间（毫秒转秒）
+        long now = System.currentTimeMillis();
+        long expireTime = obj.created() + obj.ttl();
+        long remaining = expireTime - now;
+        
+        if (remaining <= 0) {
+            // 已过期，删除 key
+            delete(key);
+            return -2;
+        }
+        
+        return (int) Math.max(0, remaining / 1000);
     }
 
     /**

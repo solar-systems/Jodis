@@ -32,8 +32,8 @@ public class JodisObject implements ExpireObject {
         this.value = value;
         this.type = type;
         this.encoding = encoding;
-        this.created = Instant.now().getEpochSecond();
-        this.ttl = ttl;
+        this.created = Instant.now().toEpochMilli(); // 使用毫秒时间戳
+        this.ttl = ttl; // ttl 以毫秒为单位
     }
 
     public static JodisObject putJodisString(String value) {

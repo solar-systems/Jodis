@@ -229,8 +229,6 @@ public class StringOperation extends KeyOperation {
     }
 
     /**
-     * todo
-     * not support now
      * Redis command: SETEX
      * @param key
      * @param timeout

@@ -191,12 +191,67 @@ public class SetOperation extends KeyOperation {
     }
 
     /**
-     * todo
      * Redis command: SSCAN
-     * @return
+     * SSCAN key cursor [MATCH pattern] [COUNT count]
+     * 
+     * @param key 集合名
+     * @param cursor 游标
+     * @param pattern 匹配模式（可选）
+     * @param count 数量限制（可选）
+     * @return [nextCursor, elements...]
      */
-    public List<String> setScan() {
-        return Lists.newArrayList();
+    public List<String> setScan(String key, String cursor, String pattern, int count) {
+        Set<String> set = getSet(key);
+        if (Objects.isNull(set)) {
+            // key 不存在，返回空结果
+            return Lists.newArrayList("0");
+        }
+        
+        // 解析游标
+        int currentCursor;
+        try {
+            currentCursor = Integer.parseInt(cursor);
+        } catch (NumberFormatException e) {
+            currentCursor = 0;
+        }
+        
+        // 将 Set 转换为 List 以便按索引访问
+        List<String> members = Lists.newArrayList(set);
+        int totalSize = members.size();
+        
+        // 如果游标已经超出范围，返回 0 表示结束
+        if (currentCursor >= totalSize) {
+            return Lists.newArrayList("0");
+        }
+        
+        // 收集元素
+        List<String> result = Lists.newArrayList();
+        int nextCursor = currentCursor;
+        int collected = 0;
+        
+        // 从当前游标位置开始遍历
+        while (nextCursor < totalSize && collected < count) {
+            String member = members.get(nextCursor);
+            
+            // 如果有 pattern，进行匹配
+            if (StringUtils.isEmpty(pattern) || StringUtils.matchPattern(member, pattern)) {
+                result.add(member);
+                collected++;
+            }
+            nextCursor++;
+        }
+        
+        // 如果已经遍历完所有元素，下一个游标为 0
+        if (nextCursor >= totalSize) {
+            nextCursor = 0;
+        }
+        
+        // 返回 [nextCursor, element1, element2, ...]
+        List<String> response = Lists.newArrayListWithCapacity(result.size() + 1);
+        response.add(String.valueOf(nextCursor));
+        response.addAll(result);
+        
+        return response;
     }
 
     /**

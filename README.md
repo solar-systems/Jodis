@@ -501,12 +501,10 @@ mvn test -Dtest=JodisClientTest
 
 ## 📋 TODO List
 - [ ] LRU 淘汰算法
-- [ ] TTL 精确过期控制
 - [ ] IO 多路复用优化
 - [ ] WAL Rewrite 后台任务
 - [ ] JDB 定时快照任务
-- [ ] 集群模式探索
-- [ ] 代码优化和单元测试完善
+- [ ] 高可用和集群模式探索
 - [ ] JMH 性能基准测试
 - [ ] Docker 镜像支持
 ---
