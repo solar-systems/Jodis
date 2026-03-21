@@ -5,8 +5,11 @@ import cn.abelib.jodis.impl.KeyType;
 import cn.abelib.jodis.impl.operation.SetOperation;
 import cn.abelib.jodis.protocol.*;
 import cn.abelib.jodis.utils.StringUtils;
+import cn.abelib.jodis.impl.executor.strategy.CommandStrategy;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -14,120 +17,208 @@ import java.util.List;
  * @Date: 2020-07-16 01:34
  */
 public class SetExecutor implements Executor {
-    private SetOperation setOperation;
+    private final JodisDb jodisDb;
+    private final Map<String, CommandStrategy> strategies = new HashMap<>();
 
     public SetExecutor(JodisDb jodisDb) {
-        this.setOperation = new SetOperation(jodisDb);
+        this.jodisDb = jodisDb;
+        registerStrategies();
     }
-
+    
+    /**
+     * 注册所有命令策略
+     */
+    private void registerStrategies() {
+        strategies.put(ProtocolConstant.SET_SADD, new SAddStrategy());
+        strategies.put(ProtocolConstant.SET_SCARD, new SCardStrategy());
+        strategies.put(ProtocolConstant.SET_SDIFF, new SDiffStrategy());
+        strategies.put(ProtocolConstant.SET_SINTER, new SInterStrategy());
+        strategies.put(ProtocolConstant.SET_SUNION, new SUnionStrategy());
+        strategies.put(ProtocolConstant.SET_SISMEMBER, new SIsMemberStrategy());
+        strategies.put(ProtocolConstant.SET_SMEMBERS, new SMembersStrategy());
+        strategies.put(ProtocolConstant.SET_SMOVE, new SMoveStrategy());
+        strategies.put(ProtocolConstant.SET_SPOP, new SPopStrategy());
+        strategies.put(ProtocolConstant.SET_SRANDMEMBER, new SRandMemberStrategy());
+        strategies.put(ProtocolConstant.SET_SREM, new SRemStrategy());
+        strategies.put(ProtocolConstant.SET_SSCAN, new SScanStrategy());
+    }
+    
+    /**
+     * 执行命令
+     */
     @Override
     public Response execute(Request request) {
         String command = request.getCommand();
         List<String> arguments = request.getArgs();
         int argSize = arguments.size();
+        
+        // 1. 基础参数验证
         if (argSize < 1) {
             return ErrorResponse.errorArgsNum(command);
         }
+        
         String key = arguments.get(0);
         if (StringUtils.isEmpty(key)) {
             return ErrorResponse.errorArgsNum(command);
         }
+        
+        // 2. 类型检查
+        SetOperation setOperation = new SetOperation(jodisDb);
         String type = setOperation.type(key);
-        // 类型不匹配
         if (!StringUtils.isEmpty(type) && !StringUtils.equals(type, KeyType.JODIS_SET)) {
             return ErrorResponse.errorSyntax();
         }
-        int num;
-        boolean flag;
-        String res;
-        List<String> list;
-        switch (command) {
-            case ProtocolConstant.SET_SADD:
-                if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                num = setOperation.setAdd(key, arguments.get(1));
-                return NumericResponse.numericResponse(num);
-
-            case ProtocolConstant.SET_SCARD:
-                if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                num = setOperation.setCard(key);
-                return NumericResponse.numericResponse(num);
-
-            case ProtocolConstant.SET_SDIFF:
-                if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                list = setOperation.setDiff(key, arguments.get(1));
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.SET_SINTER:
-                if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                list = setOperation.setInter(key, arguments.get(1));
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.SET_SUNION:
-                if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                list = setOperation.setUnion(key, arguments.get(1));
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.SET_SISMEMBER:
-                if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                flag = setOperation.setIsMember(key, arguments.get(1));
-                return NumericResponse.numericResponse(flag ? 1 : 0);
-
-            case ProtocolConstant.SET_SMEMBERS:
-                if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                list = setOperation.setMembers(key);
-                return ListResponse.stringListResponse(list);
-
-            case ProtocolConstant.SET_SMOVE:
-                if (arguments.size() != 3) {
-                    return ErrorResponse.errorArgsNum(command, 3, argSize);
-                }
-                flag = setOperation.setMove(key, arguments.get(1), arguments.get(2));
-                return NumericResponse.numericResponse(flag ? 1 : 0);
-
-            case ProtocolConstant.SET_SPOP:
-                if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                res = setOperation.setPop(key);
-                return SimpleResponse.simpleResponse(res);
-
-            case ProtocolConstant.SET_SRANDMEMBER:
-                if (arguments.size() != 1) {
-                    return ErrorResponse.errorArgsNum(command, 1, argSize);
-                }
-                res = setOperation.setRandMember(key);
-                return SimpleResponse.simpleResponse(res);
-
-            case ProtocolConstant.SET_SREM:
-                if (arguments.size() != 2) {
-                    return ErrorResponse.errorArgsNum(command, 2, argSize);
-                }
-                flag = setOperation.setRemove(key, arguments.get(1));
-                return NumericResponse.numericResponse(flag ? 1 : 0);
-
-            /**
-             * todo
-             */
-            case ProtocolConstant.SET_SSCAN:
-                return SimpleResponse.ok();
-
-            default:
-                break;
+        
+        // 3. 查找并执行策略
+        CommandStrategy strategy = strategies.get(command);
+        if (strategy == null) {
+            return ErrorResponse.errorUnknownCmd(command);
         }
-        return ErrorResponse.errorCommon();
+        
+        return strategy.execute(jodisDb, arguments);
+    }
+    
+    // ==================== 内部策略类 ====================
+    
+    /**
+     * SADD key member
+     */
+    private class SAddStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            int num = op.setAdd(args.get(0), args.get(1));
+            return NumericResponse.numericResponse(num);
+        }
+    }
+    
+    /**
+     * SCARD key
+     */
+    private class SCardStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            int num = op.setCard(args.get(0));
+            return NumericResponse.numericResponse(num);
+        }
+    }
+    
+    /**
+     * SDIFF key1 key2
+     */
+    private class SDiffStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            List<String> list = op.setDiff(args.get(0), args.get(1));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * SINTER key1 key2
+     */
+    private class SInterStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            List<String> list = op.setInter(args.get(0), args.get(1));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * SUNION key1 key2
+     */
+    private class SUnionStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            List<String> list = op.setUnion(args.get(0), args.get(1));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * SISMEMBER key member
+     */
+    private class SIsMemberStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            boolean flag = op.setIsMember(args.get(0), args.get(1));
+            return NumericResponse.numericResponse(flag ? 1 : 0);
+        }
+    }
+    
+    /**
+     * SMEMBERS key
+     */
+    private class SMembersStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            List<String> list = op.setMembers(args.get(0));
+            return ListResponse.stringListResponse(list);
+        }
+    }
+    
+    /**
+     * SMOVE source destination member
+     */
+    private class SMoveStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            boolean flag = op.setMove(args.get(0), args.get(1), args.get(2));
+            return NumericResponse.numericResponse(flag ? 1 : 0);
+        }
+    }
+    
+    /**
+     * SPOP key
+     */
+    private class SPopStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            String res = op.setPop(args.get(0));
+            return SimpleResponse.simpleResponse(res);
+        }
+    }
+    
+    /**
+     * SRANDMEMBER key
+     */
+    private class SRandMemberStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            String res = op.setRandMember(args.get(0));
+            return SimpleResponse.simpleResponse(res);
+        }
+    }
+    
+    /**
+     * SREM key member
+     */
+    private class SRemStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            SetOperation op = new SetOperation(db);
+            boolean flag = op.setRemove(args.get(0), args.get(1));
+            return NumericResponse.numericResponse(flag ? 1 : 0);
+        }
+    }
+    
+    /**
+     * SSCAN key cursor [MATCH pattern] [COUNT count]
+     */
+    private class SScanStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            return SimpleResponse.ok();
+        }
     }
 }

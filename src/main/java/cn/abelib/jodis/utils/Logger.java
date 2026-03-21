@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
@@ -16,8 +15,7 @@ public class Logger {
     private java.util.logging.Logger logger;
 
     /**
-     *  todo callerClass not work
-     * private constructor
+     * private constructor with Class - use reflection to preserve callerClass
      * @param tClass
      */
     private Logger(Class tClass) {
@@ -34,16 +32,18 @@ public class Logger {
                     tClass,
                     LogManager.getLogManager(),
                     false);
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException | ClassNotFoundException ignored) {
-            new Logger(tClass.getName());
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException | ClassNotFoundException e) {
+            // 如果反射失败，回退到标准方式
+            this.logger = java.util.logging.Logger.getLogger(tClass.getName());
         }
     }
 
     private Logger(String name) {
         this.logger = java.util.logging.Logger.getLogger(name);
     }
+    
     public static Logger getLogger(Class clazz) {
-        return new Logger(clazz.getName());
+        return new Logger(clazz);
     }
 
     /**

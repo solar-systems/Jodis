@@ -25,9 +25,28 @@
             <version>19.0</version>
         </dependency>
 
+        <!-- Netty 核心模块 - 最小化依赖 -->
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-buffer</artifactId>
+            <version>4.1.100.Final</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport</artifactId>
+            <version>4.1.100.Final</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.100.Final</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
             <version>4.1.100.Final</version>
         </dependency>
 
