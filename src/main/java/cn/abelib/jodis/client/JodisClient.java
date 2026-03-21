@@ -573,7 +573,7 @@ public class JodisClient implements Closeable {
      * @return 字符串列表
      */
     private List<String> parseArrayResponse(String response) {
-        if (response == null || response.equals("null")) {
+        if (response == null || response.equals("null") || response.equals("nil")) {
             return new ArrayList<>();
         }
         

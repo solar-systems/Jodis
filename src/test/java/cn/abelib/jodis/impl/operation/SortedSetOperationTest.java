@@ -27,10 +27,10 @@ public class SortedSetOperationTest {
         sortedSetOperation.zAdd("jodis2", 2.0, "jodis_filed_2");
         sortedSetOperation.zAdd("jodis3", 3.0, "jodis_filed_3");
 
-        System.out.println(sortedSetOperation.zScore("jodis1", "jodis_filed_1"));
-        System.out.println(sortedSetOperation.zScore("jodis2", "jodis_filed_2"));
-        System.out.println(sortedSetOperation.zScore("jodis3", "jodis_filed_3"));
-        Assert.assertEquals(sortedSetOperation.size(), 3);
+        Assert.assertEquals(1.0, sortedSetOperation.zScore("jodis1", "jodis_filed_1"), 0.01);
+        Assert.assertEquals(2.0, sortedSetOperation.zScore("jodis2", "jodis_filed_2"), 0.01);
+        Assert.assertEquals(3.0, sortedSetOperation.zScore("jodis3", "jodis_filed_3"), 0.01);
+        Assert.assertEquals(3, sortedSetOperation.size());
     }
 
     @Test
@@ -39,8 +39,8 @@ public class SortedSetOperationTest {
         sortedSetOperation.zAdd("jodis1", 2.0, "jodis_filed_2");
         sortedSetOperation.zAdd("jodis1", 3.0, "jodis_filed_3");
 
-        System.out.println(sortedSetOperation.zCard("jodis1"));
-        Assert.assertEquals(sortedSetOperation.size(), 1);
+        Assert.assertEquals(3, sortedSetOperation.zCard("jodis1"));
+        Assert.assertEquals(1, sortedSetOperation.size());
     }
 
     @Test
@@ -58,9 +58,7 @@ public class SortedSetOperationTest {
         sortedSetOperation.zAdd("jodis1", 2.0, "jodis_filed_2");
         sortedSetOperation.zAdd("jodis1", 3.0, "jodis_filed_3");
 
-        Assert.assertEquals(sortedSetOperation.zRemove("jodis1", "jodis_filed_1"), 1);
-        System.out.println(sortedSetOperation.getJodisZSet("jodis1").getHolder());
-        System.out.println(sortedSetOperation.getJodisZSet("jodis1").getSkipList().scores());
-        System.out.println(sortedSetOperation.getJodisZSet("jodis1").getSkipList().values());
+        Assert.assertEquals(1, sortedSetOperation.zRemove("jodis1", "jodis_filed_1"));
+        Assert.assertEquals(2, sortedSetOperation.zCard("jodis1"));
     }
 }

@@ -1,0 +1,13 @@
+########## Jodis Client Properties ##########
+
+# Jodis server host
+jodis.client.host=localhost
+
+# Jodis server port
+jodis.client.port=6059
+
+# Connection timeout in milliseconds
+jodis.client.connection.timeout=5000
+
+# Socket read timeout in milliseconds
+jodis.client.so.timeout=5000

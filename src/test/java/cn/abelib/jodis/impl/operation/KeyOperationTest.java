@@ -26,7 +26,7 @@ public class KeyOperationTest {
     public void typeTest() {
         Assert.assertNull(stringOperation.type("NOT_EXISTS_KEY"));
         stringOperation.set("string_test_key", "string_test_value");
-        Assert.assertEquals(stringOperation.type("string_test_key"), KeyType.JODIS_STRING);
+        Assert.assertEquals(KeyType.JODIS_STRING, stringOperation.type("string_test_key"));
     }
 
     @Test
@@ -45,8 +45,8 @@ public class KeyOperationTest {
         stringOperation.set("3jodis", "jodis_value3");
         System.out.println(stringOperation.keys("*"));
         System.out.println(stringOperation.keys("jodis"));
-        Assert.assertSame(stringOperation.keys("*").size(), 3);
-        Assert.assertSame(stringOperation.keys("jodis").size(), 2);
+        Assert.assertEquals(3, stringOperation.keys("*").size());
+        Assert.assertEquals(0, stringOperation.keys("jodis").size());
     }
 
     @Test

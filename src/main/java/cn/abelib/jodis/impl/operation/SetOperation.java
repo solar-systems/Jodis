@@ -113,7 +113,7 @@ public class SetOperation extends KeyOperation {
     public String setRandMember(String key) {
         Set<String> set = getSet(key);
         if (Objects.isNull(set)) {
-            return StringUtils.NIL;
+            return null;
         }
         return set.iterator().next();
     }
@@ -207,7 +207,7 @@ public class SetOperation extends KeyOperation {
     public String setPop(String key) {
         Set<String> set = getSet(key);
         if (Objects.isNull(set) || set.isEmpty()) {
-            return StringUtils.NIL;
+            return null;
         }
         String member = set.iterator().next();
         set.remove(member);

@@ -88,9 +88,19 @@ public class KeyOperation extends AbstractOperation {
         if (StringUtils.equals(StringUtils.STAR, pattern)) {
             return new ArrayList<>(this.jodisDb.keySet());
         }
+        
+        // 将 Redis 通配符模式转换为 Java 正则表达式
+        // * 匹配任意数量的字符
+        // ? 匹配单个字符
+        String regex = pattern
+                .replaceAll("\\.", "\\\\.")  // 转义点号
+                .replaceAll("\\*", ".*")      // * -> .*
+                .replaceAll("\\?", ".");      // ? -> .
+        String finalRegex = "^" + regex + "$";           // 确保完全匹配
+        
         return this.jodisDb.keySet()
                 .stream()
-                .filter(key -> key.startsWith(pattern))
+                .filter(key -> key.matches(finalRegex))
                 .collect(Collectors.toList());
     }
 

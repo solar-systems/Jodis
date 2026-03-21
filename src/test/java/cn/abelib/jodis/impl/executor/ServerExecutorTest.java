@@ -5,6 +5,7 @@ import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,14 +29,15 @@ public class ServerExecutorTest {
     public void executeTest() {
         Request request1 = new Request(ProtocolConstant.SERVER_PING, Lists.newArrayList());
         Response response1 = serverExecutor.execute(request1);
-        System.err.println(response1.toRespString());
+        Assert.assertNotNull(response1);
+        Assert.assertFalse(response1.isError());
 
         Request request2 = new Request(ProtocolConstant.SERVER_DBSIZE, Lists.newArrayList());
         Response response2 = serverExecutor.execute(request2);
-        System.err.println(response2.toRespString());
+        Assert.assertNotNull(response2);
 
         Request request3 = new Request(ProtocolConstant.SERVER_FLUSHDB, Lists.newArrayList());
         Response response3 = serverExecutor.execute(request3);
-        System.err.println(response3.toRespString());
+        Assert.assertNotNull(response3);
     }
 }

@@ -4,6 +4,7 @@ import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,10 +26,12 @@ public class JodisDbTest {
     public void executeTest() throws IOException {
         Request request1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("hello", "world"));
         Response response1 = jodisDb.execute(request1);
-        System.err.println(response1.toRespString());
+        Assert.assertNotNull(response1);
+        Assert.assertFalse(response1.isError());
 
         Request request2 = new Request(ProtocolConstant.STRING_GET, Lists.newArrayList("hello"));
         Response response2 = jodisDb.execute(request2);
-        System.err.println(response2.toRespString());
+        Assert.assertNotNull(response2);
+        Assert.assertFalse(response2.isError());
     }
 }

@@ -34,11 +34,11 @@ public class SetOperationTest {
     @Test
     public void setScardTest() {
         setOperation.setAdd("jodis1", "jodis_value_1");
-        Assert.assertSame(setOperation.setCard("jodis1"), 1);
+        Assert.assertEquals(1, setOperation.setCard("jodis1"));
         setOperation.setAdd("jodis1", "jodis_value_1");
-        Assert.assertSame(setOperation.setCard("jodis1"), 1);
+        Assert.assertEquals(1, setOperation.setCard("jodis1"));
         setOperation.setAdd("jodis1", "jodis_value_2");
-        Assert.assertSame(setOperation.setCard("jodis1"), 2);
+        Assert.assertEquals(2, setOperation.setCard("jodis1"));
     }
 
     @Test
@@ -47,9 +47,8 @@ public class SetOperationTest {
         setOperation.setAdd("jodis1", "jodis_value_2");
         setOperation.setAdd("jodis2", "jodis_value_1");
         setOperation.setAdd("jodis2", "jodis_value_3");
-        List<String > list = setOperation.setDiff("jodis1", "jodis2");
-        Assert.assertSame(list.size(), 1);
-        System.err.println(list);
+        List<String> list = setOperation.setDiff("jodis1", "jodis2");
+        Assert.assertEquals(1, list.size());
     }
 
     @Test
@@ -58,9 +57,8 @@ public class SetOperationTest {
         setOperation.setAdd("jodis1", "jodis_value_2");
         setOperation.setAdd("jodis2", "jodis_value_1");
         setOperation.setAdd("jodis2", "jodis_value_3");
-        List<String > list = setOperation.setUnion("jodis1", "jodis2");
-        Assert.assertSame(list.size(), 3);
-        System.err.println(list);
+        List<String> list = setOperation.setUnion("jodis1", "jodis2");
+        Assert.assertEquals(3, list.size());
     }
 
     @Test
@@ -69,9 +67,8 @@ public class SetOperationTest {
         setOperation.setAdd("jodis1", "jodis_value_2");
         setOperation.setAdd("jodis2", "jodis_value_1");
         setOperation.setAdd("jodis2", "jodis_value_3");
-        List<String > list = setOperation.setInter("jodis1", "jodis2");
-        Assert.assertSame(list.size(), 1);
-        System.err.println(list);
+        List<String> list = setOperation.setInter("jodis1", "jodis2");
+        Assert.assertEquals(1, list.size());
     }
 
     @Test
@@ -100,9 +97,9 @@ public class SetOperationTest {
     @Test
     public void setRemoveTest() {
         setOperation.setAdd("jodis1", "jodis_value");
-        Assert.assertSame(setOperation.setMembers("jodis1").size(), 1);
+        Assert.assertEquals(1, setOperation.setMembers("jodis1").size());
         Assert.assertTrue(setOperation.setRemove("jodis1", "jodis_value"));
-        Assert.assertSame(setOperation.setMembers("jodis1").size(), 0);
+        Assert.assertEquals(0, setOperation.setMembers("jodis1").size());
     }
 
     @Test

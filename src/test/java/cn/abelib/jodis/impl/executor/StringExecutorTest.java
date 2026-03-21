@@ -5,6 +5,7 @@ import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
 import com.google.common.collect.Lists;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,14 +29,17 @@ public class StringExecutorTest {
     public void executeTest() {
         Request request1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("hello", "world"));
         Response response1 = stringExecutor.execute(request1);
-        System.err.println(response1.toRespString());
+        Assert.assertNotNull(response1);
+        Assert.assertFalse(response1.isError());
 
         Request request2 = new Request(ProtocolConstant.STRING_GET, Lists.newArrayList("hello"));
         Response response2 = stringExecutor.execute(request2);
-        System.err.println(response2.toRespString());
+        Assert.assertNotNull(response2);
+        Assert.assertFalse(response2.isError());
 
         Request request3 = new Request(ProtocolConstant.STRING_STRLEN, Lists.newArrayList("hello"));
         Response response3 = stringExecutor.execute(request3);
-        System.err.println(response3.toRespString());
+        Assert.assertNotNull(response3);
+        Assert.assertFalse(response3.isError());
     }
 }

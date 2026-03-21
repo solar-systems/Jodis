@@ -1,5 +1,6 @@
 package cn.abelib.jodis.utils;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -10,6 +11,8 @@ public class ByteUtilsTest {
 
     @Test
     public void test() {
-        System.err.println(ByteUtils.string2Binary("ab"));
+        String result = ByteUtils.string2Binary("ab");
+        Assert.assertNotNull(result);
+        Assert.assertFalse(result.isEmpty());
     }
 }

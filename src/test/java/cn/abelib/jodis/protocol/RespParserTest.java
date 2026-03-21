@@ -1,5 +1,6 @@
 package cn.abelib.jodis.protocol;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,8 +26,8 @@ public class RespParserTest {
                 "$6\r\n" +
                 "world1";
         Request req = respParser.parse(request);
-        System.out.println(req.getCommand());
-        System.out.println(req.getArgs());
-        System.out.println("\\n".length());
+        Assert.assertNotNull(req);
+        Assert.assertEquals("SET", req.getCommand());
+        Assert.assertEquals(2, req.getArgs().size());
     }
 }

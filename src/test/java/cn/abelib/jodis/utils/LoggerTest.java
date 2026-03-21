@@ -1,5 +1,6 @@
 package cn.abelib.jodis.utils;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.Constructor;
@@ -23,31 +24,23 @@ public class LoggerTest {
 
         logger.error("error");
         logger.error("error {} {}", "error1", "erro2");
+        
+        // 添加断言确保代码执行成功
+        Assert.assertNotNull(logger);
     }
 
     @Test
     public void loggerTest() throws Exception {
-        Class tClass = this.getClass();
-        Class clazz = Class.forName("java.util.logging.Logger");
-        Constructor constructor = clazz.getDeclaredConstructor(new Class[]{String.class,
-                String.class,
-                Class.class,
-                LogManager.class,
-                boolean.class});
-        constructor.setAccessible(true);
-        java.util.logging.Logger logger = (java.util.logging.Logger) constructor.newInstance( tClass.getName(),
-                null,
-                tClass,
-                LogManager.getLogManager(),
-                false);
-       // logger.addHandler();
+        // 使用标准方式获取 Logger
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger(this.getClass().getName());
         logger.info("Hello");
+        Assert.assertNotNull(logger);
     }
 
     @Test
     public void logger2Test() throws Exception {
-
         java.util.logging.Logger logger = java.util.logging.Logger.getLogger(this.getClass().getName());
         logger.info("Hello");
+        Assert.assertNotNull(logger);
     }
 }

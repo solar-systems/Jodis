@@ -1,6 +1,6 @@
 package cn.abelib.jodis.example;
 
-import cn.abelib.jodis.EmbaddedJodis;
+import cn.abelib.jodis.EmbeddedJodis;
 import cn.abelib.jodis.protocol.ProtocolConstant;
 import cn.abelib.jodis.protocol.Request;
 import cn.abelib.jodis.protocol.Response;
@@ -14,7 +14,7 @@ import java.io.IOException;
  */
 public class JodisExample {
     public static void main(String[] args) throws IOException {
-        EmbaddedJodis jodis = EmbaddedJodis.start("conf/jodis.properties");
+        EmbeddedJodis jodis = EmbeddedJodis.start("conf/jodis.properties");
         Request request = new Request(ProtocolConstant.SERVER_PING, Lists.newArrayList());
         Response response = jodis.execute(request);
         System.out.println(response);

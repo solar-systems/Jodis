@@ -43,10 +43,10 @@ public class ListOperation extends KeyOperation{
     public String leftIndex(String key, int index) {
         List<String> value = getList(key);
         if (Objects.isNull(value)) {
-            return StringUtils.NIL;
+            return null;
         }
         if (index >= value.size() || index < 0) {
-            return StringUtils.NIL;
+            return null;
         }
 
         return value.get(index);

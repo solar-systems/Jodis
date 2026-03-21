@@ -24,7 +24,7 @@ public class ListOperationTest {
 
     @Test
     public void listLengthTest() {
-        Assert.assertSame(listOperation.listLength("hello"), 0);
+        Assert.assertEquals(0, listOperation.listLength("hello"));
     }
 
     @Test
@@ -60,10 +60,8 @@ public class ListOperationTest {
         listOperation.leftPush("jodis_list", "jodis_item2");
         listOperation.leftPush("jodis_list", "jodis_item3");
 
-        Assert.assertSame(listOperation.leftInsert("jodis_list", "jodis_item1", "jodis_item1_before"), 4);
-        System.err.println(listOperation.getJodisList("jodis_list").getHolder());
-        Assert.assertSame(listOperation.rightInsert("jodis_list", "jodis_item1", "jodis_item1_after"), 5);
-        System.err.println(listOperation.getJodisList("jodis_list").getHolder());
+        Assert.assertEquals(4, listOperation.leftInsert("jodis_list", "jodis_item1", "jodis_item1_before"));
+        Assert.assertEquals(5, listOperation.rightInsert("jodis_list", "jodis_item1", "jodis_item1_after"));
     }
 
     @Test
@@ -92,7 +90,10 @@ public class ListOperationTest {
         listOperation.leftPush("jodis_list", "jodis_item2");
         listOperation.leftPush("jodis_list", "jodis_item3");
 
-        System.err.println(listOperation.listRange("jodis_list", 0, 1));
-        System.err.println(listOperation.listRange("jodis_list", 1, 2));
+        java.util.List<String> result1 = listOperation.listRange("jodis_list", 0, 1);
+        Assert.assertEquals(2, result1.size());
+        
+        java.util.List<String> result2 = listOperation.listRange("jodis_list", 1, 2);
+        Assert.assertEquals(2, result2.size());
     }
 }
