@@ -218,7 +218,36 @@ public class SetExecutor implements Executor {
     private class SScanStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            return SimpleResponse.ok();
+            // 参数解析：SSCAN key cursor [MATCH pattern] [COUNT count]
+            String key = args.get(0);
+            String cursor = args.get(1);
+            
+            // 默认值
+            String pattern = null;
+            int count = 10; // Redis 默认 COUNT 为 10
+            
+            // 解析可选参数 MATCH 和 COUNT
+            for (int i = 2; i < args.size(); i++) {
+                String arg = args.get(i).toUpperCase();
+                if ("MATCH".equals(arg) && i + 1 < args.size()) {
+                    pattern = args.get(i + 1);
+                    i++; // 跳过 pattern 值
+                } else if ("COUNT".equals(arg) && i + 1 < args.size()) {
+                    try {
+                        count = Integer.parseInt(args.get(i + 1));
+                        i++; // 跳过 count 值
+                    } catch (NumberFormatException e) {
+                        return ErrorResponse.errorInvalidNumber();
+                    }
+                }
+            }
+            
+            // 执行 SSCAN 操作
+            SetOperation op = new SetOperation(db);
+            List<String> result = op.setScan(key, cursor, pattern, count);
+            
+            // 返回数组响应
+            return ListResponse.stringListResponse(result);
         }
     }
 }

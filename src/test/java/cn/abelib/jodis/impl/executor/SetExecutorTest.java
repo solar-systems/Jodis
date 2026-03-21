@@ -43,4 +43,26 @@ public class SetExecutorTest {
         Response response4 = setExecutor.execute(request4);
         Assert.assertNotNull(response4);
     }
+
+    @Test
+    public void testSScan() {
+        // 添加测试数据
+        setExecutor.execute(new Request(ProtocolConstant.SET_SADD, Lists.newArrayList("myset", "apple")));
+        setExecutor.execute(new Request(ProtocolConstant.SET_SADD, Lists.newArrayList("myset", "banana")));
+        setExecutor.execute(new Request(ProtocolConstant.SET_SADD, Lists.newArrayList("myset", "cherry")));
+        setExecutor.execute(new Request(ProtocolConstant.SET_SADD, Lists.newArrayList("myset", "date")));
+        setExecutor.execute(new Request(ProtocolConstant.SET_SADD, Lists.newArrayList("myset", "elderberry")));
+        
+        // SSCAN 基本测试
+        Request sscanReq = new Request(ProtocolConstant.SET_SSCAN, Lists.newArrayList("myset", "0", "COUNT", "3"));
+        Response sscanResp = setExecutor.execute(sscanReq);
+        Assert.assertNotNull(sscanResp);
+        Assert.assertFalse(sscanResp.isError());
+        
+        // SSCAN with MATCH pattern
+        Request sscanMatchReq = new Request(ProtocolConstant.SET_SSCAN, Lists.newArrayList("myset", "0", "MATCH", "a*", "COUNT", "10"));
+        Response sscanMatchResp = setExecutor.execute(sscanMatchReq);
+        Assert.assertNotNull(sscanMatchResp);
+        Assert.assertFalse(sscanMatchResp.isError());
+    }
 }

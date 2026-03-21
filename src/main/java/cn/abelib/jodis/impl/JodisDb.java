@@ -25,15 +25,10 @@ public class JodisDb {
     private Logger logger = Logger.getLogger(JodisDb.class);
 
     /**
-     * 存储不带过期时间的key
+     * 存储所有 key（包括带 TTL 的和不带 TTL的）
+     * TTL 信息保存在 JodisObject 的 ttl 和 created 字段中
      */
     private ConcurrentHashMap<String, JodisObject> jodisCollection;
-
-    /**
-     *  todo TTL
-     * 存储带过期时间的key
-     */
-    private ConcurrentHashMap<String, JodisObject> expireJodisCollection;
 
     private ExecutorFactory executorFactory;
 

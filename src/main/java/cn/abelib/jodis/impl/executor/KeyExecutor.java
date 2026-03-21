@@ -155,12 +155,13 @@ public class KeyExecutor implements Executor {
     private class ExpireStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            long timestamp = NumberUtils.toTimestamp(args.get(1));
-            if (timestamp < 0) {
-                return NumericResponse.numericResponse(0);
+            // 解析秒数
+            Integer seconds = NumberUtils.parseInt(args.get(1));
+            if (seconds == null || seconds < 0) {
+                return ErrorResponse.errorInvalidNumber();
             }
             KeyOperation op = new KeyOperation(db);
-            int ans = op.expire(args.get(0), timestamp, TimeUnit.SECONDS);
+            int ans = op.expire(args.get(0), seconds, TimeUnit.SECONDS);
             return NumericResponse.numericResponse(ans);
         }
     }
@@ -171,9 +172,10 @@ public class KeyExecutor implements Executor {
     private class ExpireAtStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            long timestamp = NumberUtils.toTimestamp(args.get(1));
-            if (timestamp < 0) {
-                return NumericResponse.numericResponse(0);
+            // 解析 Unix 时间戳（秒）
+            Integer timestamp = NumberUtils.parseInt(args.get(1));
+            if (timestamp == null || timestamp < 0) {
+                return ErrorResponse.errorInvalidNumber();
             }
             KeyOperation op = new KeyOperation(db);
             int ans = op.expireAt(args.get(0), timestamp, TimeUnit.SECONDS);
@@ -187,12 +189,8 @@ public class KeyExecutor implements Executor {
     private class TtlStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            long timestamp = NumberUtils.toTimestamp(args.get(1));
-            if (timestamp < 0) {
-                return NumericResponse.numericResponse(0);
-            }
             KeyOperation op = new KeyOperation(db);
-            int ans = op.ttl(args.get(0), timestamp, TimeUnit.SECONDS);
+            int ans = op.ttl(args.get(0));
             return NumericResponse.numericResponse(ans);
         }
     }
