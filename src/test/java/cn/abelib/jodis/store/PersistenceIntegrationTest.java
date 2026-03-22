@@ -188,4 +188,36 @@ public class PersistenceIntegrationTest {
         
         newDb.close();
     }
+    
+    @Test
+    public void testBgRewriteAofCommand() throws Exception {
+        // 1. 执行一些写操作
+        String setCmd = "*3\r\n$3\r\nSET\r\n$4\r\ntest\r\n$5\r\nvalue\r\n";
+        jodisDb.execute(setCmd);
+        
+        // 2. 通过 BGREWRITEAOF 命令触发 WAL 重写
+        String bgRewriteCmd = "*1\r\n$12\r\nBGREWRITEAOF\r\n";
+        jodisDb.execute(bgRewriteCmd);
+        
+        // 等待一小段时间让异步重写完成
+        Thread.sleep(100);
+        
+        // 3. 验证数据仍然存在
+        Assert.assertTrue(jodisDb.containsKey("test"));
+        
+        // 4. 关闭并重新打开验证数据持久化
+        jodisDb.close();
+        
+        Properties props = new Properties();
+        props.setProperty("log.dir", TEST_LOG_DIR);
+        props.setProperty("log.wal", TEST_WAL_FILE);
+        props.setProperty("log.jdb", TEST_JDB_FILE);
+        props.setProperty("log.reload.mode", "0");
+        
+        JodisConfig config = new JodisConfig(props);
+        JodisDb newDb = new JodisDb(config);
+        
+        Assert.assertTrue(newDb.containsKey("test"));
+        newDb.close();
+    }
 }

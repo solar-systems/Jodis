@@ -67,14 +67,19 @@ public class StringExecutor implements Executor {
             return ErrorResponse.errorArgsNum(command);
         }
         
-        // 2. 类型检查
+        // 2. 特殊处理：某些命令需要更多参数验证
+        if (command.equals(ProtocolConstant.STRING_SET) && argSize < 2) {
+            return ErrorResponse.errorArgsNum(command, 2, argSize);
+        }
+        
+        // 3. 类型检查
         StringOperation stringOperation = new StringOperation(jodisDb);
         String type = stringOperation.type(key);
         if (type != null && !StringUtils.equals(type, KeyType.JODIS_STRING)) {
             return ErrorResponse.errorSyntax();
         }
         
-        // 3. 查找并执行策略
+        // 4. 查找并执行策略
         CommandStrategy strategy = strategies.get(command);
         if (strategy == null) {
             return ErrorResponse.errorUnknownCmd(command);
@@ -91,9 +96,16 @@ public class StringExecutor implements Executor {
     private class SetStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            StringOperation op = new StringOperation(db);
-            op.set(args.get(0), args.get(1));
-            return SimpleResponse.ok();
+            try {
+                if (args.size() < 2) {
+                    return ErrorResponse.errorArgsNum(ProtocolConstant.STRING_SET, 2, args.size());
+                }
+                StringOperation op = new StringOperation(db);
+                op.set(args.get(0), args.get(1));
+                return SimpleResponse.ok();
+            } catch (Exception e) {
+                return ErrorResponse.error("SET command failed: " + e.getMessage());
+            }
         }
     }
     
@@ -115,9 +127,16 @@ public class StringExecutor implements Executor {
     private class GetSetStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            StringOperation op = new StringOperation(db);
-            String res = op.getAndSet(args.get(0), args.get(1));
-            return SimpleResponse.simpleResponse(res);
+            try {
+                if (args.size() < 2) {
+                    return ErrorResponse.errorArgsNum(ProtocolConstant.STRING_GETSET, 2, args.size());
+                }
+                StringOperation op = new StringOperation(db);
+                String res = op.getAndSet(args.get(0), args.get(1));
+                return SimpleResponse.simpleResponse(res);
+            } catch (Exception e) {
+                return ErrorResponse.error("GETSET command failed: " + e.getMessage());
+            }
         }
     }
     
@@ -127,9 +146,16 @@ public class StringExecutor implements Executor {
     private class StrLenStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            StringOperation op = new StringOperation(db);
-            Integer num = op.strLen(args.get(0));
-            return NumericResponse.numericResponse(num);
+            try {
+                if (args.size() < 1) {
+                    return ErrorResponse.errorArgsNum(ProtocolConstant.STRING_STRLEN, 1, args.size());
+                }
+                StringOperation op = new StringOperation(db);
+                Integer num = op.strLen(args.get(0));
+                return NumericResponse.numericResponse(num);
+            } catch (Exception e) {
+                return ErrorResponse.error("STRLEN command failed: " + e.getMessage());
+            }
         }
     }
     
@@ -139,9 +165,16 @@ public class StringExecutor implements Executor {
     private class IncrStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            StringOperation op = new StringOperation(db);
-            Integer num = op.increment(args.get(0));
-            return NumericResponse.numericResponse(num);
+            try {
+                if (args.size() < 1) {
+                    return ErrorResponse.errorArgsNum(ProtocolConstant.STRING_INCR, 1, args.size());
+                }
+                StringOperation op = new StringOperation(db);
+                Integer num = op.increment(args.get(0));
+                return NumericResponse.numericResponse(num);
+            } catch (Exception e) {
+                return ErrorResponse.error("INCR command failed: " + e.getMessage());
+            }
         }
     }
     
@@ -151,13 +184,20 @@ public class StringExecutor implements Executor {
     private class IncrByStrategy implements CommandStrategy {
         @Override
         public Response execute(JodisDb db, List<String> args) {
-            Integer num = NumberUtils.parseInt(args.get(1));
-            if (Objects.isNull(num)) {
-                return ErrorResponse.errorInvalidNumber();
+            try {
+                if (args.size() < 2) {
+                    return ErrorResponse.errorArgsNum(ProtocolConstant.STRING_INCRBY, 2, args.size());
+                }
+                Integer num = NumberUtils.parseInt(args.get(1));
+                if (Objects.isNull(num)) {
+                    return ErrorResponse.errorInvalidNumber();
+                }
+                StringOperation op = new StringOperation(db);
+                num = op.incrementBy(args.get(0), num);
+                return NumericResponse.numericResponse(num);
+            } catch (Exception e) {
+                return ErrorResponse.error("INCRBY command failed: " + e.getMessage());
             }
-            StringOperation op = new StringOperation(db);
-            num = op.incrementBy(args.get(0), num);
-            return NumericResponse.numericResponse(num);
         }
     }
     

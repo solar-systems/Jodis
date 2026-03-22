@@ -140,6 +140,7 @@ public interface ProtocolConstant {
     String SERVER_PING = "PING";
     String SERVER_FLUSHDB = "FLUSHDB";
     String SERVER_DBSIZE = "DBSIZE";
+    String SERVER_BGREWRITEAOF = "BGREWRITEAOF";
 
-    Set<String> SERVER_CMDS = Sets.newHashSet(SERVER_PING, SERVER_FLUSHDB, SERVER_DBSIZE);
+    Set<String> SERVER_CMDS = Sets.newHashSet(SERVER_PING, SERVER_FLUSHDB, SERVER_DBSIZE, SERVER_BGREWRITEAOF);
 }

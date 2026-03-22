@@ -36,8 +36,14 @@ public class JodisSend implements Send {
             if (Objects.isNull(response)) {
                 response = ErrorResponse.errorCommon();
             }
-            byte[] bytes = ByteUtils.getBytesUTF8(response.toRespString());
-            ByteBuffer buffer = ByteBuffer.wrap(bytes);
+            byte[] respBytes = ByteUtils.getBytesUTF8(response.toRespString());
+
+            // 创建包含4字节长度前缀的缓冲区
+            ByteBuffer buffer = ByteBuffer.allocate(4 + respBytes.length);
+            buffer.putInt(respBytes.length);  // 写入4字节长度前缀
+            buffer.put(respBytes);             // 写入响应数据
+            buffer.flip();
+
             write = socketChannel.write(buffer);
         } catch (IOException e) {
             logger.error(e);
