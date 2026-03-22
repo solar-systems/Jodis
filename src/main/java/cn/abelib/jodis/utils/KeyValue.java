@@ -9,15 +9,26 @@ public class KeyValue<K, V> {
     private V value;
 
     private boolean isNull;
+    
+    private long expireTime;  // TTL 过期时间戳
 
     public KeyValue() {
         this.isNull = true;
+        this.expireTime = -1;
     }
 
     public KeyValue(K key, V value) {
         this.key = key;
         this.value = value;
         this.isNull = false;
+        this.expireTime = -1;
+    }
+    
+    public KeyValue(K key, V value, long expireTime) {
+        this.key = key;
+        this.value = value;
+        this.isNull = false;
+        this.expireTime = expireTime;
     }
 
     public K getKey() {
@@ -38,6 +49,14 @@ public class KeyValue<K, V> {
 
     public boolean isNull() {
         return this.isNull;
+    }
+    
+    public long getExpireTime() {
+        return expireTime;
+    }
+    
+    public void setExpireTime(long expireTime) {
+        this.expireTime = expireTime;
     }
 
     @Override

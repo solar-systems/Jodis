@@ -142,6 +142,38 @@ public class JodisClient implements Closeable {
         String response = sendCommand("STRLEN", key);
         return Long.parseLong(response);
     }
+    
+    /**
+     * Redis command: EXPIRE
+     * @param key key
+     * @param seconds 过期时间（秒）
+     * @return 1 成功，0 失败
+     */
+    public long expire(String key, int seconds) throws IOException {
+        String response = sendCommand("EXPIRE", key, String.valueOf(seconds));
+        return Long.parseLong(response);
+    }
+    
+    /**
+     * Redis command: TTL
+     * @param key key
+     * @return 剩余秒数；-1 永不过期；-2 key不存在
+     */
+    public long ttl(String key) throws IOException {
+        String response = sendCommand("TTL", key);
+        return Long.parseLong(response);
+    }
+    
+    /**
+     * Redis command: SETEX
+     * @param key key
+     * @param seconds 过期时间（秒）
+     * @param value 值
+     * @return OK
+     */
+    public String setex(String key, int seconds, String value) throws IOException {
+        return sendCommand("SETEX", key, String.valueOf(seconds), value);
+    }
 
     /**
      * DEL 命令 - 删除键

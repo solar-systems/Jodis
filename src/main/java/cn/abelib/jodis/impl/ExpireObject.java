@@ -14,4 +14,16 @@ public interface ExpireObject {
     long ttl();
 
     void ttl(long ttl);
+    
+    /**
+     * 获取过期时间戳
+     * @return 过期时间戳（毫秒），永不过期返回 -1
+     */
+    long getExpireTime();
+    
+    /**
+     * 设置过期时间戳
+     * @param expireTime 过期时间戳（毫秒）
+     */
+    void setExpireTime(long expireTime);
 }
