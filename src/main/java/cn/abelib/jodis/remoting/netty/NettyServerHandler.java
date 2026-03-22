@@ -35,12 +35,12 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             byteBuf.readBytes(bytes);
             String request = new String(bytes, StandardCharsets.UTF_8);
 
-            // 处理换行符
-            int len = request.length();
-            if (len >= 1 && request.endsWith("\n")) {
-                request = request.substring(0, len - 1);
-            }
-            if (len >= 2 && request.endsWith("\r")) {
+            // 移除末尾的 \r\n（RESP 协议格式）
+            if (request.endsWith("\r\n")) {
+                request = request.substring(0, request.length() - 2);
+            } else if (request.endsWith("\n")) {
+                request = request.substring(0, request.length() - 1);
+            } else if (request.endsWith("\r")) {
                 request = request.substring(0, request.length() - 1);
             }
 

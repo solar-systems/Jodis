@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -146,14 +147,27 @@ public class JodisDb implements Closeable {
      * @return
      */
     public Response execute(Request request) throws IOException {
-        Response response = executorFactory.execute(request);
-        // 检测是否需要进行Wal
+        logger.debug("Executing command: {} args: {}", request.getCommand(), request.getArgs());
+        Response response;
+        try {
+            response = executorFactory.execute(request);
+            logger.debug("Command {} executed, response type: {}, is_error: {}",
+                        request.getCommand(), response.getClass().getSimpleName(), response.isError());
+        } catch (Exception e) {
+            logger.error("Executor factory failed for command {}: {}", 
+                        request.getCommand(), e.getMessage(), e);
+            throw e;
+        }
+        
+        // 检测是否需要进行 Wal
         if (!noNeed && request.needLog() && !response.isError()) {
-            // 如果正在进行Wal重写
+            // 如果正在进行 Wal 重写
             if (rewriteWal.get()) {
                 requestQueue.add(request);
             } else {
                 walWriter.write(request.getRequest());
+                // 检查是否需要进行 WAL 重写
+                checkAndTriggerRewrite();
             }
         }
         return response;
@@ -177,7 +191,6 @@ public class JodisDb implements Closeable {
     }
 
     /**
-     * todo
      * 从磁盘加载数据
      */
     public void loadFromLog() throws IOException {
@@ -220,8 +233,10 @@ public class JodisDb implements Closeable {
         try {
             Map<String, JodisObject> data = jdbReader.readSnapshot();
             jodisCollection.putAll(data);
+            logger.info("Load from JDB completed, loaded {} keys", data.size());
         } catch (IOException e) {
             logger.warn("Load from JDB failed: {}. Will continue with empty database.", e.getMessage());
+            logger.info("JDB load error details", e);
         }
     }
 
@@ -244,9 +259,55 @@ public class JodisDb implements Closeable {
     }
         
     /**
-     * todo 合理位置调用 rewriteWal
-     * 重写的规模，比如 multi 操作的最大值
-     * Wal 重写
+     * 检查并触发 WAL 重写
+     * 当 WAL 文件大小超过配置的阈值时自动触发重写
+     * 
+     * 使用 CompletableFuture 实现异步任务的优势：
+     * 1. 更现代的 API，支持函数式编程风格
+     * 2. 内置异常处理机制，无需手动 try-catch
+     * 3. 支持链式调用和任务组合
+     * 4. 可获取执行结果和状态
+     * 5. 默认使用 ForkJoinPool.commonPool() 线程池，复用线程资源
+     * 6. 避免 new Thread() 导致的资源浪费和管理困难
+     */
+    private void checkAndTriggerRewrite() throws IOException {
+        Path walPath = Paths.get(jodisConfig.getLogDir(), jodisConfig.getLogWal());
+        if (Files.exists(walPath)) {
+            long walSize = Files.size(walPath);
+            int rewriteThreshold = jodisConfig.getRewriteSize();
+            
+            if (walSize >= rewriteThreshold) {
+                logger.info("WAL file size ({} bytes) exceeds threshold ({} bytes), triggering rewrite", 
+                           walSize, rewriteThreshold);
+                
+                // 使用 CompletableFuture 异步执行重写任务，避免阻塞主线程
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    try {
+                        rewriteWal();
+                        logger.info("WAL rewrite completed successfully");
+                    } catch (IOException e) {
+                        logger.error("WAL rewrite failed", e);
+                    }
+                });
+                
+                // 添加完成回调，用于处理异常和日志记录
+                future.whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        logger.error("WAL rewrite task completed with exception", ex);
+                    } else {
+                        logger.info("WAL rewrite task finished");
+                    }
+                });
+            }
+        }
+    }
+    
+    /**
+     * WAL 重写
+     * 将当前内存中的数据快照和重写期间的新请求写入新的 WAL 文件，然后原子替换旧文件
+     * 调用时机：
+     * 1. 自动触发：当 WAL 文件大小超过配置的阈值（log.wal.rewrite.size）时
+     * 2. 手动触发：通过 BGREWRITEAOF 命令由管理员手动触发
      * @throws IOException
      */
     public void rewriteWal() throws IOException {
@@ -305,6 +366,33 @@ public class JodisDb implements Closeable {
         
     /**
      * 完成 WAL 文件替换
+     * 
+     * 原子替换原理：
+     * 1. 使用 StandardCopyOption.ATOMIC_MOVE 标志保证原子性
+     *    - 操作要么完全成功，要么完全失败，不会出现中间状态
+     *    - 一旦成功，新文件内容对所有进程立即可见
+     * 
+     * 2. 依赖操作系统的 rename() 系统调用（Linux/macOS）
+     *    - POSIX 标准保证同一文件系统上的 rename 操作是原子的
+     *    - 由文件系统保证原子性，不需要额外的锁机制
+     *    - 瞬间完成：只修改目录项（inode 引用），不复制实际数据
+     * 
+     * 3. 确保源文件和目标文件在同一文件系统
+     *    - walPath 和 rewritePath 都在 log.dir 目录下
+     *    - 满足 rename() 系统调用的原子性要求
+     *    - 避免跨文件系统移动导致的非原子操作
+     * 
+     * 替换流程（三步走）：
+     * Step 1: old.wal → old.wal.bak   (备份旧文件，非原子但安全)
+     * Step 2: new.rewrite → old.wal   (原子替换，核心步骤！)
+     * Step 3: delete old.wal.bak      (清理备份，不影响原子性)
+     * 
+     * 故障恢复：
+     * - 如果 Step 1 失败：保留原 WAL 文件，可重试
+     * - 如果 Step 2 失败：ATOMIC_MOVE 保证不会留下部分状态
+     * - 如果 Step 3 失败：WAL 已替换成功，只是占用额外磁盘空间
+     * 
+     * @throws IOException 当文件操作失败时抛出异常
      */
     private void completeWalRewrite() throws IOException {
         Path walPath = Paths.get(jodisConfig.getLogDir(), jodisConfig.getLogWal());

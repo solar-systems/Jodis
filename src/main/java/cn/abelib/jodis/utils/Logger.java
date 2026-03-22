@@ -93,4 +93,20 @@ public class Logger {
     public void error(String msgFormat, Object... args) {
         this.error(String.format(msgFormat.replaceAll("\\{\\}", "%s"), args));
     }
+    
+    /**
+     * LEVEL.FINE (DEBUG)
+     * @param msg
+     */
+    public void debug(String msg) {
+        if (logger.isLoggable(Level.FINE)) {
+            this.logger.fine(msg);
+        }
+    }
+    
+    public void debug(String msgFormat, Object... args) {
+        if (logger.isLoggable(Level.FINE)) {
+            this.debug(String.format(msgFormat.replaceAll("\\{\\}", "%s"), args));
+        }
+    }
 }

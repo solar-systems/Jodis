@@ -29,6 +29,7 @@ public class ServerExecutor implements Executor{
         strategies.put(ProtocolConstant.SERVER_PING, new PingStrategy());
         strategies.put(ProtocolConstant.SERVER_DBSIZE, new DbSizeStrategy());
         strategies.put(ProtocolConstant.SERVER_FLUSHDB, new FlushDbStrategy());
+        strategies.put(ProtocolConstant.SERVER_BGREWRITEAOF, new BgRewriteAofStrategy());
     }
     
     /**
@@ -89,6 +90,21 @@ public class ServerExecutor implements Executor{
             ServerOperation op = new ServerOperation(db);
             op.flushDb();
             return SimpleResponse.ok();
+        }
+    }
+    
+    /**
+     * BGREWRITEAOF - 触发 WAL 重写
+     */
+    private class BgRewriteAofStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            try {
+                db.rewriteWal();
+                return SimpleResponse.simpleResponse("+Background append only file rewriting started");
+            } catch (Exception e) {
+                return ErrorResponse.error(e.getMessage());
+            }
         }
     }
 }

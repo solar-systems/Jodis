@@ -29,25 +29,25 @@
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-buffer</artifactId>
-            <version>4.1.100.Final</version>
+            <version>4.1.108.Final</version>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-transport</artifactId>
-            <version>4.1.100.Final</version>
+            <version>4.1.108.Final</version>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-handler</artifactId>
-            <version>4.1.100.Final</version>
+            <version>4.1.108.Final</version>
         </dependency>
         
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
-            <version>4.1.100.Final</version>
+            <version>4.1.108.Final</version>
         </dependency>
 
     </dependencies>
@@ -60,6 +60,24 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                </configuration>
+            </plugin>
+            
+            <!-- 配置 exec-maven-plugin 用于运行主类时抑制警告 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>cn.abelib.jodis.Jodis</mainClass>
+                    <arguments>
+                        <argument>--add-opens</argument>
+                        <argument>java.base/sun.misc=ALL-UNNAMED</argument>
+                        <argument>--add-opens</argument>
+                        <argument>java.base/java.nio=ALL-UNNAMED</argument>
+                        <argument>--add-opens</argument>
+                        <argument>java.base/sun.nio.ch=ALL-UNNAMED</argument>
+                    </arguments>
                 </configuration>
             </plugin>
         </plugins>

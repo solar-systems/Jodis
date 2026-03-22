@@ -78,6 +78,17 @@ public class Jodis implements Closeable {
     }
 
     public static void main(String[] args) {
+        // 配置日志级别
+        try {
+            java.io.InputStream is = Jodis.class.getClassLoader().getResourceAsStream("logging.properties");
+            if (is != null) {
+                java.util.logging.LogManager.getLogManager().readConfiguration(is);
+                System.out.println("Logging configuration loaded");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load logging config: " + e.getMessage());
+        }
+        
         Jodis jodis = new Jodis();
         jodis.start("conf/jodis.properties");
         jodis.awaitShutdown();

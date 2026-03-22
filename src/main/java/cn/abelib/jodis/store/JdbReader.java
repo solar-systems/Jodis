@@ -42,6 +42,12 @@ public class JdbReader {
         Map<String, JodisObject> data = new HashMap<>();
         long now = System.currentTimeMillis();
         
+        // 如果文件不存在或为空，直接返回空数据
+        if (!jdbFile.toFile().exists() || jdbFile.toFile().length() == 0) {
+            logger.info("JDB file does not exist or is empty, returning empty data");
+            return data;
+        }
+        
         try (DataInputStream dis = new DataInputStream(new FileInputStream(jdbFile.toFile()))) {
             // 1. 验证文件头
             int magicLen = dis.readByte();
@@ -69,32 +75,41 @@ public class JdbReader {
             int expiredCount = 0;
             
             while (true) {
-                byte type = dis.readByte();
-                if (type == JdbConstant.EOF) {
-                    break;  // 文件结束
-                }
-                
-                int totalLen = dis.readInt();
-                byte[] entryData = new byte[totalLen - 1];  // 减去 type 占用的 1 字节
-                dis.readFully(entryData);
-                
-                ByteBuffer buffer = ByteBuffer.wrap(entryData);
-                KeyValue<String, JodisObject> entry = parseEntry(type, buffer);
-                
-                if (entry != null && !entry.isNull()) {
-                    // 检查是否过期
-                    if (entry.getValue().getExpireTime() > 0 && entry.getValue().getExpireTime() < now) {
-                        expiredCount++;
-                        logger.info("Skip expired key: {}", entry.getKey());
-                    } else {
-                        data.put(entry.getKey(), entry.getValue());
-                        count++;
+                try {
+                    byte type = dis.readByte();
+                    if (type == JdbConstant.EOF) {
+                        break;  // 文件结束
                     }
+                    
+                    int totalLen = dis.readInt();
+                    byte[] entryData = new byte[totalLen - 1];  // 减去 type 占用的 1 字节
+                    dis.readFully(entryData);
+                    
+                    ByteBuffer buffer = ByteBuffer.wrap(entryData);
+                    KeyValue<String, JodisObject> entry = parseEntry(type, buffer);
+                    
+                    if (entry != null && !entry.isNull()) {
+                        // 检查是否过期
+                        if (entry.getValue().getExpireTime() > 0 && entry.getValue().getExpireTime() < now) {
+                            expiredCount++;
+                            logger.info("Skip expired key: {}", entry.getKey());
+                        } else {
+                            data.put(entry.getKey(), entry.getValue());
+                            count++;
+                        }
+                    }
+                } catch (java.io.EOFException e) {
+                    // 正常到达文件末尾
+                    logger.info("Reached end of JDB file");
+                    break;
                 }
             }
             
             logger.info("Read JDB file completed, total keys: {}, expired keys: {}", count, expiredCount);
             return data;
+        } catch (Exception e) {
+            logger.error("Failed to read JDB file: {}", e.getMessage(), e);
+            throw new IOException("Failed to read JDB snapshot", e);
         }
     }
     

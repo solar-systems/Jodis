@@ -14,27 +14,42 @@ import java.util.Set;
  * @Date: 2020-08-07 01:06
  */
 public class RespParser {
+    private static final cn.abelib.jodis.utils.Logger logger = cn.abelib.jodis.utils.Logger.getLogger(RespParser.class);
 
     public Request parse(String request) {
+        logger.info("RespParser.parse input: {}", request.replace("\r", "\\r").replace("\n", "\\n"));
+
         Request req;
         String[] arguments;
         boolean parsed = false;
         // maybe inline command
         if (!request.startsWith(ProtocolConstant.LIST_PREFIX)) {
+            logger.info("Parsing as inline command");
             arguments = request.split(StringUtils.SPACE);
             parsed = true;
         } else {
+            logger.info("Parsing as RESP protocol");
             request = request.substring(1);
             String[] cmds = request.split(StringUtils.CLRF);
+
+            logger.info("Split result: length={}", cmds.length);
+            for (int i = 0; i < cmds.length; i++) {
+                logger.info("  cmds[{}] = \"{}\"", i, cmds[i]);
+            }
+
             String sizeStr = cmds[0].trim();
             Integer cmdSize = NumberUtils.parseInt(sizeStr);
+            logger.info("cmdSize from string '{}': {}", sizeStr, cmdSize);
+
             if (Objects.isNull(cmdSize)) {
+                logger.error("Failed to parse cmdSize");
                 Response errResp = ErrorResponse.errorSyntax();
                 return Request.badRequest(errResp);
             }
             // RESP 协议格式：[count, $len1, val1, $len2, val2, ...]
             // count + (len + value) * cmdSize = 1 + cmdSize * 2 个元素
             if (cmds.length < cmdSize * 2 + 1) {
+                logger.error("cmds.length {} < cmdSize * 2 + 1 = {}", cmds.length, cmdSize * 2 + 1);
                 Response errResp = ErrorResponse.errorSyntax();
                 return Request.badRequest(errResp);
             }
@@ -43,15 +58,18 @@ public class RespParser {
             // 实际值在索引 2, 4, 6, ... (跳过 count 和长度声明)
             for (int i = 2; i < cmds.length && idx < cmdSize; i += 2) {
                 arguments[idx] = cmds[i];
+                logger.info("  arguments[{}] = \"{}\"", idx, cmds[i]);
                 idx ++;
             }
         }
         int len = arguments.length;
         if (len < 1) {
+            logger.error("No arguments found");
             Response errResp = ErrorResponse.errorSyntax();
             return Request.badRequest(errResp);
         }
         String command = arguments[0].toUpperCase();
+        logger.info("Parsed command: {}, args count: {}", command, arguments.length - 1);
         List<String> args = Lists.newArrayList(arguments);
         args.remove(0);
         req = new Request(command, args);
