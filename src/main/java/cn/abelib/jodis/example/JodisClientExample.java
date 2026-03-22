@@ -129,6 +129,37 @@ public class JodisClientExample {
             System.out.println("   KEYS * -> " + allKeys);
             System.out.println();
             
+            // 8.5 TTL 操作测试
+            System.out.println("8.5 TTL Operations:");
+            client.set("temp_key", "temp_value");
+            System.out.println("   SET temp_key temp_value");
+            
+            long expireResult = client.expire("temp_key", 60);  // 设置 60 秒过期
+            System.out.println("   EXPIRE temp_key 60 -> " + (expireResult == 1 ? "success" : "failed"));
+            
+            long ttl = client.ttl("temp_key");
+            System.out.println("   TTL temp_key -> " + ttl + " seconds");
+            
+            // 测试 SETEX
+            client.setex("session_key", 120, "session_data");
+            System.out.println("   SETEX session_key 120 session_data");
+            
+            long sessionTtl = client.ttl("session_key");
+            System.out.println("   TTL session_key -> " + sessionTtl + " seconds");
+            
+            String sessionValue = client.get("session_key");
+            System.out.println("   GET session_key -> " + sessionValue);
+            
+            // 测试永不过期的 key
+            client.set("permanent_key", "permanent_value");
+            long permanentTtl = client.ttl("permanent_key");
+            System.out.println("   TTL permanent_key -> " + permanentTtl + " (-1 means no expiry)");
+            
+            // 测试不存在的 key
+            long nonExistentTtl = client.ttl("non_existent_key");
+            System.out.println("   TTL non_existent_key -> " + nonExistentTtl + " (-2 means not exists)");
+            System.out.println();
+            
             // 9. Server 操作
             System.out.println("9. Server Operations:");
             long dbSize = client.dbsize();

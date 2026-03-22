@@ -19,4 +19,6 @@ public interface JdbConstant {
     int JDB_TYPE_SIZE = 1;
 
     int JDB_INT_SIZE = 4;
+    
+    int JDB_LONG_SIZE = 8;  // TTL 时间戳需要 8 字节
 }

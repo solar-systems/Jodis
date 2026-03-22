@@ -109,4 +109,27 @@ public class JodisObject implements ExpireObject {
     public void ttl(long ttl) {
         this.ttl = ttl;
     }
+    
+    /**
+     * 获取过期时间戳（毫秒）
+     * @return 过期时间戳，如果没有设置 TTL 则返回 -1
+     */
+    public long getExpireTime() {
+        if (this.ttl <= 0) {
+            return -1;  // 永不过期
+        }
+        return this.created + this.ttl;
+    }
+    
+    /**
+     * 设置过期时间戳
+     * @param expireTime 过期时间戳（毫秒）
+     */
+    public void setExpireTime(long expireTime) {
+        if (expireTime <= 0) {
+            this.ttl = -1;
+        } else {
+            this.ttl = expireTime - this.created;
+        }
+    }
 }

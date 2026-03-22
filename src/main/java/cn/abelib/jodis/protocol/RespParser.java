@@ -32,13 +32,16 @@ public class RespParser {
                 Response errResp = ErrorResponse.errorSyntax();
                 return Request.badRequest(errResp);
             }
-            if (cmdSize * 2 + 1 != cmds.length || cmds.length < 3) {
+            // RESP 协议格式：[count, $len1, val1, $len2, val2, ...]
+            // count + (len + value) * cmdSize = 1 + cmdSize * 2 个元素
+            if (cmds.length < cmdSize * 2 + 1) {
                 Response errResp = ErrorResponse.errorSyntax();
                 return Request.badRequest(errResp);
             }
             arguments = new String[cmdSize];
             int idx = 0;
-            for (int i = 2; i < cmds.length; i += 2) {
+            // 实际值在索引 2, 4, 6, ... (跳过 count 和长度声明)
+            for (int i = 2; i < cmds.length && idx < cmdSize; i += 2) {
                 arguments[idx] = cmds[i];
                 idx ++;
             }
@@ -60,14 +63,14 @@ public class RespParser {
     }
 
     /**
-     * eg *3\r\n$3\r\nset\r\n$4\r\nname\r\n$3\r\nbob\r\n
-    */
+     * 构建内联命令格式（用于 WAL 存储，单行，便于按行读取）
+     * eg: SET name Jodis
+     */
     public String parseRequest(String[] arguments) {
-        StringBuilder request = new StringBuilder(ProtocolConstant.LIST_PREFIX);
-        for (int i = 0; i < arguments.length; i ++) {
-            String arg = arguments[i];
-            request.append(arg);
-            if (i != arguments.length - 1) {
+        StringBuilder request = new StringBuilder();
+        for (int i = 0; i < arguments.length; i++) {
+            request.append(arguments[i]);
+            if (i < arguments.length - 1) {
                 request.append(StringUtils.SPACE);
             }
         }

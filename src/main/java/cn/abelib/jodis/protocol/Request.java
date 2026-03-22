@@ -1,4 +1,4 @@
-package cn.abelib.jodis.protocol;
+  package cn.abelib.jodis.protocol;
 
 import java.util.List;
 
@@ -8,7 +8,14 @@ import java.util.List;
  * @date 2020/6/30 18:54
  *
  *  eg:
- *   *3\r\n$3\r\nset\r\n$4\r\nname\r\n$4\r\nhuang\r\n
+ *   *3\r
+$3\r
+set\r
+$4\r
+name\r
+$4\r
+huang\r
+
  */
 public class Request {
     private String request;
@@ -21,13 +28,21 @@ public class Request {
     public Request() {}
 
     /**
-     * command为大写模式
+     * command 为大写模式
      * @param command
      * @param args
      */
     public Request(String command, List<String> args) {
         this.command = command.toUpperCase();
         this.args = args;
+        // 构建内联命令格式（用于 WAL 存储，单行便于按行读取）
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.command);
+        for (String arg : args) {
+            sb.append(" ").append(arg);
+        }
+        this.request = sb.toString();
+
         // 判断是否需要写入日志
         if (ProtocolConstant.NEED_LOGS.contains(this.command)) {
             this.needLog = true;

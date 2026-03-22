@@ -70,7 +70,7 @@ public class StringExecutor implements Executor {
         // 2. 类型检查
         StringOperation stringOperation = new StringOperation(jodisDb);
         String type = stringOperation.type(key);
-        if (!StringUtils.isEmpty(type) && !StringUtils.equals(type, KeyType.JODIS_STRING)) {
+        if (type != null && !StringUtils.equals(type, KeyType.JODIS_STRING)) {
             return ErrorResponse.errorSyntax();
         }
         
