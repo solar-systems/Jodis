@@ -1,17 +1,21 @@
 package cn.abelib.jodis.server;
 
 import cn.abelib.jodis.remoting.ServerFactory;
+import cn.abelib.jodis.store.StoreConfig;
 import cn.abelib.jodis.utils.PropertiesUtils;
 import cn.abelib.jodis.utils.StringUtils;
 
 import java.util.Properties;
 
 /**
+ * Jodis 服务器配置
+ *
  * @Author: abel.huang
  * @Date: 2020-07-02 23:11
  */
 public class JodisConfig {
     private final Properties props;
+    private final StoreConfig storeConfig;
 
     /**
      * 日志加载配置, 重写日志配置, 网络连接配置
@@ -19,6 +23,7 @@ public class JodisConfig {
      */
     public JodisConfig(Properties props) {
         this.props = props;
+        this.storeConfig = new StoreConfig(props);
     }
 
     /**
@@ -33,45 +38,36 @@ public class JodisConfig {
         return port;
     }
 
+    /**
+     * 获取存储配置
+     */
+    public StoreConfig getStoreConfig() {
+        return storeConfig;
+    }
+
+    // ==================== 委托给 StoreConfig 的方法 ====================
+
     public String getLogDir() {
-        String logDir = PropertiesUtils.getString(props, "log.dir", "log/");
-        if (StringUtils.isEmpty(logDir)) {
-            throw new ConfigurationException(StringUtils.format("Invalid log directory {}, log directory must not be empty", logDir));
-        }
-        return logDir;
+        return storeConfig.getLogDir();
     }
 
     public String getLogJdb() {
-        String logJdb = PropertiesUtils.getString(props, "log.jdb", "default.jdb");
-        if (StringUtils.isEmpty(logJdb)) {
-            throw new ConfigurationException(StringUtils.format("Invalid jdb log {}, jdb log file name must not be empty", logJdb));
-        }
-        return logJdb;
+        return storeConfig.getJdbFile();
     }
 
     public String getLogWal() {
-        String logWal =  PropertiesUtils.getString(props, "log.wal", "default.wal");
-        if (StringUtils.isEmpty(logWal)) {
-            throw new ConfigurationException(StringUtils.format("Invalid wal log {}, wal log file name must not be empty", logWal));
-        }
-        return logWal;
+        return storeConfig.getWalFile();
     }
 
     public int getRewriteSize() {
-        int rewriteSize = PropertiesUtils.getInteger(props, "log.wal.rewrite.size", 64 * 1024 * 1024);
-        if (rewriteSize < 64 * 1024 || rewriteSize > 1024 * 1024 * 1024) {
-            throw new ConfigurationException(StringUtils.format("Invalid rewriteSize {}, rewriteSize must in [64KB, 1024MB]", rewriteSize));
-        }
-        return rewriteSize;
+        return storeConfig.getRewriteSize();
     }
 
     public int getReloadMode() {
-        int reloadMode = PropertiesUtils.getInteger(props, "log.reload.mode", 2);
-        if (reloadMode < 0 || reloadMode > 2) {
-            throw new ConfigurationException(StringUtils.format("Invalid reloadMode {}, reloadMode must be a integer in [0, 1, 2]", reloadMode));
-        }
-        return reloadMode;
+        return storeConfig.getReloadMode();
     }
+
+    // ==================== 服务器配置 ====================
 
     public int getMaxRequestSize() {
         int maxRequestSize = PropertiesUtils.getInteger(props, "server.max.request", 1024);
