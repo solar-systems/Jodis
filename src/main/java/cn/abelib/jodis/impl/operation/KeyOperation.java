@@ -3,6 +3,7 @@ package cn.abelib.jodis.impl.operation;
 import cn.abelib.jodis.impl.JodisDb;
 import cn.abelib.jodis.impl.JodisObject;
 import cn.abelib.jodis.utils.StringUtils;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -223,5 +224,76 @@ public class KeyOperation extends AbstractOperation {
             return this.jodisDb.keySet().iterator().next();
         }
         return null;
+    }
+
+    /**
+     * Redis command: SCAN
+     * SCAN cursor [MATCH pattern] [COUNT count]
+     * 
+     * @param cursor 游标，从上一次迭代的位置开始
+     * @param pattern 匹配模式（可选），支持通配符 * 和 ?
+     * @param count 每次返回的元素数量建议值（可选），默认 10
+     * @return [nextCursor, key1, key2, ...]，当 nextCursor 为 "0" 时表示迭代结束
+     */
+    public List<String> scan(String cursor, String pattern, int count) {
+        // 解析游标
+        int currentCursor;
+        try {
+            currentCursor = Integer.parseInt(cursor);
+        } catch (NumberFormatException e) {
+            currentCursor = 0;
+        }
+        
+        // 获取所有 key
+        List<String> allKeys = new ArrayList<>(this.jodisDb.keySet());
+        int totalSize = allKeys.size();
+        
+        // 如果游标已经超出范围，返回 0 表示结束
+        if (currentCursor >= totalSize) {
+            return Lists.newArrayList("0");
+        }
+        
+        // 收集元素
+        List<String> result = Lists.newArrayList();
+        int nextCursor = currentCursor;
+        int collected = 0;
+        
+        // 从当前游标位置开始遍历
+        while (nextCursor < totalSize && collected < count) {
+            String key = allKeys.get(nextCursor);
+            
+            // 检查是否过期，过期的 key 不返回
+            if (!exists(key)) {
+                nextCursor++;
+                continue;
+            }
+            
+            // 如果有 pattern，进行匹配
+            if (pattern != null && !StringUtils.equals(StringUtils.STAR, pattern)) {
+                // 将 Redis 通配符模式转换为 Java 正则表达式
+                String regex = pattern
+                        .replaceAll("\\.", "\\\\.")  // 转义点号
+                        .replaceAll("\\*", ".*")      // * -> .*
+                        .replaceAll("\\?", ".");      // ? -> .
+                regex = "^" + regex + "$";           // 确保完全匹配
+                
+                if (!key.matches(regex)) {
+                    nextCursor++;
+                    continue;
+                }
+            }
+            
+            // 匹配成功，添加到结果
+            result.add(key);
+            collected++;
+            nextCursor++;
+        }
+        
+        // 构建返回值：[nextCursor, key1, key2, ...]
+        List<String> response = Lists.newArrayListWithCapacity(result.size() + 1);
+        response.add(String.valueOf(nextCursor));
+        response.addAll(result);
+        
+        return response;
     }
 }

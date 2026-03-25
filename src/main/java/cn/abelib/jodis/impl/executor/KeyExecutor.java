@@ -38,6 +38,7 @@ public class KeyExecutor implements Executor {
         strategies.put(ProtocolConstant.KEY_EXPIRE, new ExpireStrategy());
         strategies.put(ProtocolConstant.KEY_EXPIRE_AT, new ExpireAtStrategy());
         strategies.put(ProtocolConstant.KEY_TTL, new TtlStrategy());
+        strategies.put(ProtocolConstant.KEY_SCAN, new ScanStrategy());
     }
     
     /**
@@ -192,6 +193,44 @@ public class KeyExecutor implements Executor {
             KeyOperation op = new KeyOperation(db);
             int ans = op.ttl(args.get(0));
             return NumericResponse.numericResponse(ans);
+        }
+    }
+    
+    /**
+     * SCAN cursor [MATCH pattern] [COUNT count]
+     */
+    private class ScanStrategy implements CommandStrategy {
+        @Override
+        public Response execute(JodisDb db, List<String> args) {
+            // 参数解析：SCAN cursor [MATCH pattern] [COUNT count]
+            String cursor = args.get(0);
+            
+            // 默认值
+            String pattern = null;
+            int count = 10; // Redis 默认 COUNT 为 10
+            
+            // 解析可选参数 MATCH 和 COUNT
+            for (int i = 1; i < args.size(); i++) {
+                String arg = args.get(i).toUpperCase();
+                if ("MATCH".equals(arg) && i + 1 < args.size()) {
+                    pattern = args.get(i + 1);
+                    i++; // 跳过 pattern 值
+                } else if ("COUNT".equals(arg) && i + 1 < args.size()) {
+                    try {
+                        count = Integer.parseInt(args.get(i + 1));
+                        i++; // 跳过 count 值
+                    } catch (NumberFormatException e) {
+                        return ErrorResponse.errorInvalidNumber();
+                    }
+                }
+            }
+            
+            // 执行 SCAN 操作
+            KeyOperation op = new KeyOperation(db);
+            List<String> result = op.scan(cursor, pattern, count);
+            
+            // 返回数组响应
+            return ListResponse.stringListResponse(result);
         }
     }
 }

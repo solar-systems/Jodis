@@ -26,9 +26,10 @@ public interface ProtocolConstant {
     String KEY_RENAME = "RENAME";
     String KEY_RENAMENX = "RENAMENX";
     String KEY_TYPE = "TYPE";
+    String KEY_SCAN = "SCAN";
 
     Set<String> KEY_CMDS = Sets.newHashSet(KEY_DEL, KEY_EXISTS, KEY_EXPIRE, KEY_EXPIRE_AT, KEY_KEYS,
-            KEY_TTL, KEY_RANDOM_KEY, KEY_RENAME, KEY_RENAMENX, KEY_TYPE);
+            KEY_TTL, KEY_RANDOM_KEY, KEY_RENAME, KEY_RENAMENX, KEY_TYPE, KEY_SCAN);
 
     String STRING_SET = "SET";
     String STRING_GET = "GET";
