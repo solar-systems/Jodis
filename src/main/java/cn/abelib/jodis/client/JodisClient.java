@@ -583,6 +583,42 @@ public class JodisClient implements Closeable {
         return parseArrayResponse(response);
     }
 
+    /**
+     * SCAN 命令 - 增量迭代数据库中的键
+     * @param cursor 游标，从 "0" 开始
+     * @return [nextCursor, key1, key2, ...]，当 nextCursor 为 "0" 时表示迭代结束
+     * @throws IOException
+     */
+    public List<String> scan(String cursor) throws IOException {
+        String response = sendCommand("SCAN", cursor);
+        return parseArrayResponse(response);
+    }
+
+    /**
+     * SCAN 命令 - 增量迭代数据库中的键（带 MATCH 选项）
+     * @param cursor 游标，从 "0" 开始
+     * @param pattern 匹配模式（如 "user:*"）
+     * @return [nextCursor, key1, key2, ...]
+     * @throws IOException
+     */
+    public List<String> scan(String cursor, String pattern) throws IOException {
+        String response = sendCommand("SCAN", cursor, "MATCH", pattern);
+        return parseArrayResponse(response);
+    }
+
+    /**
+     * SCAN 命令 - 增量迭代数据库中的键（带 MATCH 和 COUNT 选项）
+     * @param cursor 游标，从 "0" 开始
+     * @param pattern 匹配模式（如 "user:*"）
+     * @param count 每次返回的元素数量建议值
+     * @return [nextCursor, key1, key2, ...]
+     * @throws IOException
+     */
+    public List<String> scan(String cursor, String pattern, int count) throws IOException {
+        String response = sendCommand("SCAN", cursor, "MATCH", pattern, "COUNT", String.valueOf(count));
+        return parseArrayResponse(response);
+    }
+
     // ==================== 辅助方法 ====================
 
     /**

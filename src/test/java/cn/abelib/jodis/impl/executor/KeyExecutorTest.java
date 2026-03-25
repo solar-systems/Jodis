@@ -83,4 +83,77 @@ public class KeyExecutorTest {
         Response expireAtResp = keyExecutor.execute(expireAtReq);
         Assert.assertNotNull(expireAtResp);
     }
+
+    @Test
+    public void testScanBasic() throws IOException {
+        Request set1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("user:100", "Alice"));
+        keyExecutor.execute(set1);
+        Request set2 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("user:101", "Bob"));
+        keyExecutor.execute(set2);
+        Request set3 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("order:200", "pending"));
+        keyExecutor.execute(set3);
+        Request set4 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("config", "value"));
+        keyExecutor.execute(set4);
+        
+        Request scanReq = new Request(ProtocolConstant.KEY_SCAN, Lists.newArrayList("0", "COUNT", "5"));
+        Response scanResp = keyExecutor.execute(scanReq);
+        
+        Assert.assertNotNull(scanResp);
+        Assert.assertFalse(scanResp.isError());
+    }
+
+    @Test
+    public void testScanWithMatchPattern() throws IOException {
+        Request set1 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("user:100", "Alice"));
+        keyExecutor.execute(set1);
+        Request set2 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("user:101", "Bob"));
+        keyExecutor.execute(set2);
+        Request set3 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("user:102", "Charlie"));
+        keyExecutor.execute(set3);
+        Request set4 = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("order:200", "pending"));
+        keyExecutor.execute(set4);
+        
+        Request scanUserReq = new Request(ProtocolConstant.KEY_SCAN, 
+                Lists.newArrayList("0", "MATCH", "user:*", "COUNT", "10"));
+        Response scanUserResp = keyExecutor.execute(scanUserReq);
+        
+        Assert.assertNotNull(scanUserResp);
+        Assert.assertFalse(scanUserResp.isError());
+    }
+
+    @Test
+    public void testScanIterateAll() throws IOException {
+        for (int i = 1; i <= 10; i++) {
+            Request setReq = new Request(ProtocolConstant.STRING_SET, Lists.newArrayList("key:" + i, "value"));
+            keyExecutor.execute(setReq);
+        }
+        
+        String cursor = "0";
+        int iterations = 0;
+        int maxIterations = 20;
+        
+        do {
+            Request scanReq = new Request(ProtocolConstant.KEY_SCAN, 
+                    Lists.newArrayList(cursor, "COUNT", "3"));
+            Response scanResp = keyExecutor.execute(scanReq);
+            
+            Assert.assertNotNull(scanResp);
+            Assert.assertFalse(scanResp.isError());
+            
+            iterations++;
+            if (iterations > maxIterations) break;
+            
+        } while (!cursor.equals("0"));
+        
+        Assert.assertTrue(iterations > 0);
+    }
+
+    @Test
+    public void testScanEmptyDatabase() {
+        Request scanReq = new Request(ProtocolConstant.KEY_SCAN, Lists.newArrayList("0"));
+        Response scanResp = keyExecutor.execute(scanReq);
+        
+        Assert.assertNotNull(scanResp);
+        Assert.assertFalse(scanResp.isError());
+    }
 }
